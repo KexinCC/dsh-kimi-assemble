@@ -1,0 +1,33 @@
+# dsh-kimi-assemble —— Kimi browser extension (WebBridge) + KimiCU desktop control → native DSH tools
+# ============================================================================
+# This bundle only mounts the plugin into the profile; the `config` below are the overrides
+# this deployment wants. Install: plugin_manager install_bundle target=<this directory>
+#
+# NOTE: the Loader replaces `config` wholesale, it does not deep-merge. When you override this
+#       row from a higher layer, write every key you want to keep; omitted keys fall back to the
+#       code defaults in lib/config.mjs.
+# ============================================================================
+- insert:
+    - id: kimi-assemble
+      name: dsh-kimi-assemble
+      config:
+        # Browser (Kimi extension / WebBridge daemon, default 127.0.0.1:10086)
+        webbridgeEnabled: true
+        webbridgeAddr: ''          # empty = auto-discover (reads ~/.kimi-webbridge/daemon.addr)
+        webbridgeAutoStart: true   # start `kimi-webbridge` when unreachable
+        webbridgeTimeoutMs: 60000
+        browserGroupTitle: DSH
+        # Desktop (KimiCU native agent)
+        kimicuEnabled: true
+        kimicuExePath: ''          # empty = auto-discover %LOCALAPPDATA%\Kimi Computer Use\kimi-cu.exe
+        kimicuAutoStart: true      # start `kimi-cu.exe start-agent` when unreachable
+        kimicuTimeoutMs: 120000
+        cuMaxTreeChars: 12000
+        # Prompt section and runtime skills
+        promptSection: true
+        registerSkills: true
+        # Language of the text a HUMAN sees: auto | en | zh
+        # (tool descriptions are always English — they are part of the model-facing catalog)
+        language: auto
+        # Tool names to drop, e.g. ['kimi_cu_launch'] to keep only reading/acting
+        disabledTools: []

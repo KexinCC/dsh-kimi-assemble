@@ -1,0 +1,72 @@
+{
+  "name": "dsh-kimi-assemble",
+  "version": "1.0.0",
+  "description": "Native DeepSeek Harness tools for the Kimi browser extension (WebBridge) and KimiCU desktop control: kimi_browser_* drives the user's real logged-in browser, kimi_cu_* observes and operates Windows desktops.",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "deepseek-harness",
+    "kimi",
+    "webbridge",
+    "kimicu",
+    "browser-automation",
+    "computer-use",
+    "desktop-automation"
+  ],
+  "license": "MIT",
+  "author": "dsh-kimi-assemble contributors",
+  "homepage": "https://github.com/dsh-community/dsh-kimi-assemble#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dsh-community/dsh-kimi-assemble.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dsh-community/dsh-kimi-assemble/issues"
+  },
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "references",
+    "locale/*.json",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "check": "node scripts/check-syntax.mjs",
+    "test": "node scripts/check-syntax.mjs && node test/unit.mjs && node test/faults.mjs && node test/i18n.mjs && node test/market.mjs && node test/pack.mjs",
+    "test:unit": "node test/unit.mjs",
+    "test:faults": "node test/faults.mjs",
+    "test:i18n": "node test/i18n.mjs",
+    "test:market": "node test/market.mjs",
+    "test:pack": "node test/pack.mjs",
+    "test:live": "node test/live.mjs",
+    "test:integration": "node test/integration.mjs",
+    "bench": "node test/bench.mjs",
+    "market:build": "node scripts/build-market-index.mjs"
+  }
+}

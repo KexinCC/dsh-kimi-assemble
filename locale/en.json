@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Kimi Local Bridges",
+    "description": "Native tools for the Kimi browser extension (WebBridge) and KimiCU desktop control: kimi_browser_* drives the user's real logged-in browser, kimi_cu_* observes and operates Windows windows. Batch scripts run many actions in one model round."
+  }
+}

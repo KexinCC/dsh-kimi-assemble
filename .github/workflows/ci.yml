@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    name: Offline suites (${{ matrix.os }}, node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: ['22', '24']
+        include:
+          - os: windows-latest
+            node: '24'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Syntax check
+        run: node scripts/check-syntax.mjs
+
+      - name: Unit tests (default language)
+        run: node test/unit.mjs
+
+      - name: Unit tests (en)
+        run: node test/unit.mjs
+        env:
+          KIMI_LANG: en
+
+      - name: Unit tests (zh)
+        run: node test/unit.mjs
+        env:
+          KIMI_LANG: zh
+
+      - name: Fault injection
+        run: node test/faults.mjs
+
+      - name: i18n catalog
+        run: node test/i18n.mjs
+
+      - name: Plugin-market index
+        run: node test/market.mjs
+
+  pack:
+    name: Pack contents
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Package contains what it should
+        run: node test/pack.mjs
+
+  # The live and integration suites need a real browser extension daemon and a
+  # real Windows desktop agent, so they run on the maintainer's machine only.
+  # See CONTRIBUTING.md for the commands.

@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Packed artefacts
+*.tgz
+*.tar.gz
+
+# Build output
+dist/
+market.tmp/
+
+# Local verification profiles
+.tmp-profile/
+tmp-profile/
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*

@@ -1,0 +1,108 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Kimi Local Bridges",
+    "zh": "Kimi 本地桥"
+  },
+  "description": {
+    "en": "Plugins that connect the Kimi browser extension and KimiCU desktop control to DeepSeek Harness.",
+    "zh": "把 Kimi 浏览器扩展与 KimiCU 桌面控制接入 DeepSeek Harness 的插件。"
+  },
+  "metadata": {
+    "categories": {
+      "tools": {
+        "title": {
+          "en": "Tools",
+          "zh": "工具"
+        }
+      }
+    },
+    "labels": {
+      "browser": {
+        "title": {
+          "en": "Browser",
+          "zh": "浏览器"
+        }
+      },
+      "desktop": {
+        "title": {
+          "en": "Desktop",
+          "zh": "桌面"
+        }
+      },
+      "windows": {
+        "title": {
+          "en": "Windows only",
+          "zh": "仅 Windows"
+        }
+      },
+      "real-session": {
+        "title": {
+          "en": "Uses your real session",
+          "zh": "使用真实登录态"
+        }
+      }
+    },
+    "sortKeys": {
+      "added": {
+        "title": {
+          "en": "Added",
+          "zh": "加入时间"
+        }
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "dsh-kimi-assemble",
+      "title": {
+        "en": "Kimi Local Bridges",
+        "zh": "Kimi 能力本地集成"
+      },
+      "description": {
+        "en": "Native tools for the Kimi browser extension (WebBridge) and KimiCU desktop control: kimi_browser_* drives your real logged-in browser, kimi_cu_* observes and operates Windows windows. Batch scripts run many actions in one model round.",
+        "zh": "把 Kimi 浏览器扩展（WebBridge）与 KimiCU 桌面控制接成本地原生工具：kimi_browser_* 操作用户真实浏览器，kimi_cu_* 观察与操作 Windows 窗口；批量脚本一次调用跑完多步。"
+      },
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IktpbWkgbG9jYWwgYnJpZGdlcyI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImthLWciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjNGY3Y2ZmIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzhiNWNmNiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgeD0iMiIgeT0iMiIgd2lkdGg9IjYwIiBoZWlnaHQ9IjYwIiByeD0iMTQiIGZpbGw9InVybCgja2EtZykiIG9wYWNpdHk9IjAuMTQiLz4KICA8cmVjdCB4PSIyLjc1IiB5PSIyLjc1IiB3aWR0aD0iNTguNSIgaGVpZ2h0PSI1OC41IiByeD0iMTMuMjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNrYS1nKSIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNTUiLz4KICA8IS0tIGxlZnQ6IGJyb3dzZXIgd2luZG93IC0tPgogIDxyZWN0IHg9IjEwIiB5PSIxNiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjE1IiByeD0iMi42IiBmaWxsPSJub25lIiBzdHJva2U9IiM0ZjdjZmYiIHN0cm9rZS13aWR0aD0iMi4xIi8+CiAgPHBhdGggZD0iTTEwIDIxLjRoMjAiIHN0cm9rZT0iIzRmN2NmZiIgc3Ryb2tlLXdpZHRoPSIxLjYiIG9wYWNpdHk9IjAuOCIvPgogIDxjaXJjbGUgY3g9IjEzLjIiIGN5PSIxOC43IiByPSIxIiBmaWxsPSIjNGY3Y2ZmIi8+CiAgPGNpcmNsZSBjeD0iMTYuNCIgY3k9IjE4LjciIHI9IjEiIGZpbGw9IiM0ZjdjZmYiIG9wYWNpdHk9IjAuNiIvPgogIDwhLS0gcmlnaHQ6IGRlc2t0b3AgbW9uaXRvciAtLT4KICA8cmVjdCB4PSIzNCIgeT0iMTgiIHdpZHRoPSIyMCIgaGVpZ2h0PSIxMyIgcng9IjIuMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGI1Y2Y2IiBzdHJva2Utd2lkdGg9IjIuMSIvPgogIDxwYXRoIGQ9Ik00NCAzMXY0LjRNNDAgMzcuNmg4IiBzdHJva2U9IiM4YjVjZjYiIHN0cm9rZS13aWR0aD0iMi4xIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8IS0tIGJyaWRnZSBhcmMgYmV0d2VlbiB0aGVtIC0tPgogIDxwYXRoIGQ9Ik0zMCAyMy41YzIuNi01LjQgNy40LTguMiAxMi04LjIgMy40IDAgNi40IDEuMyA4LjQgMy42IiBmaWxsPSJub25lIiBzdHJva2U9InVybCgja2EtZykiIHN0cm9rZS13aWR0aD0iMi4xIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1kYXNoYXJyYXk9IjAuMSA0LjYiLz4KICA8cGF0aCBkPSJNMzAgMzQuNWMyLjYgNS40IDcuNCA4LjIgMTIgOC4yIDMuNCAwIDYuNC0xLjMgOC40LTMuNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ1cmwoI2thLWcpIiBzdHJva2Utd2lkdGg9IjIuMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtZGFzaGFycmF5PSIwLjEgNC42Ii8+CiAgPCEtLSBiYXNlIGJhcjogb25lIGxvY2FsIHN1cmZhY2UgLS0+CiAgPHBhdGggZD0iTTEyIDQ2aDQwIiBzdHJva2U9InVybCgja2EtZykiIHN0cm9rZS13aWR0aD0iMi40IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9IjAuNzUiLz4KPC9zdmc+Cg==",
+      "author": "dsh-kimi-assemble contributors",
+      "homepage": "https://github.com/dsh-community/dsh-kimi-assemble#readme",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/dsh-community/dsh-kimi-assemble"
+      },
+      "metadata": {
+        "category": "tools",
+        "keywords": [
+          "kimi",
+          "webbridge",
+          "kimicu",
+          "browser",
+          "desktop",
+          "automation",
+          "computer-use"
+        ],
+        "labels": [
+          "browser",
+          "desktop",
+          "windows",
+          "real-session"
+        ],
+        "sortKeys": {
+          "added": "2026-10-23"
+        }
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "publishTimestamp": 1792689397,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": ">=0.2.0"
+          }
+        }
+      ]
+    }
+  ]
+}

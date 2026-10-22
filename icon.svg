@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Kimi local bridges">
+  <defs>
+    <linearGradient id="ka-g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f7cff"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#ka-g)" opacity="0.14"/>
+  <rect x="2.75" y="2.75" width="58.5" height="58.5" rx="13.25" fill="none" stroke="url(#ka-g)" stroke-width="1.5" opacity="0.55"/>
+  <!-- left: browser window -->
+  <rect x="10" y="16" width="20" height="15" rx="2.6" fill="none" stroke="#4f7cff" stroke-width="2.1"/>
+  <path d="M10 21.4h20" stroke="#4f7cff" stroke-width="1.6" opacity="0.8"/>
+  <circle cx="13.2" cy="18.7" r="1" fill="#4f7cff"/>
+  <circle cx="16.4" cy="18.7" r="1" fill="#4f7cff" opacity="0.6"/>
+  <!-- right: desktop monitor -->
+  <rect x="34" y="18" width="20" height="13" rx="2.2" fill="none" stroke="#8b5cf6" stroke-width="2.1"/>
+  <path d="M44 31v4.4M40 37.6h8" stroke="#8b5cf6" stroke-width="2.1" stroke-linecap="round"/>
+  <!-- bridge arc between them -->
+  <path d="M30 23.5c2.6-5.4 7.4-8.2 12-8.2 3.4 0 6.4 1.3 8.4 3.6" fill="none" stroke="url(#ka-g)" stroke-width="2.1" stroke-linecap="round" stroke-dasharray="0.1 4.6"/>
+  <path d="M30 34.5c2.6 5.4 7.4 8.2 12 8.2 3.4 0 6.4-1.3 8.4-3.6" fill="none" stroke="url(#ka-g)" stroke-width="2.1" stroke-linecap="round" stroke-dasharray="0.1 4.6"/>
+  <!-- base bar: one local surface -->
+  <path d="M12 46h40" stroke="url(#ka-g)" stroke-width="2.4" stroke-linecap="round" opacity="0.75"/>
+</svg>
