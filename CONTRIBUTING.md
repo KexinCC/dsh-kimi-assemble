@@ -41,9 +41,28 @@ Re-install after changing JavaScript — replacing an installed package requires
 restart to load a fresh module generation. Then verify:
 
 ```text
-cordis_inspect_query(Tool.listTools)     # expect 13 kimi_* tools
+cordis_inspect_query(Tool.listTools)     # expect 17 kimi_* tools
 kimi_status                              # expect both bridges reported
 ```
+
+Mind the owner of the checkout: a `link:` install makes the profile's
+`node_modules/<pkg>` a junction to this directory, and removing that bundle can
+delete *through* the junction. Prefer installing the published package (or a
+`npm pack` tarball) and keep this checkout out of the profile.
+
+### Clean up after you test
+
+Automated runs (`bench/run.mjs`, `bench/semantics.mjs`) close their own sessions.
+When you test by hand in the host, you are the one leaving state behind — always
+finish with:
+
+```text
+kimi_browser_tabs { action: "close_session", session: "<the session you used>" }
+```
+
+and stop the fixture server (`node bench/server.mjs`). Never leave `127.0.0.1`
+test tabs or a running bench server in the user's browser: they land in the same
+window the user is working in.
 
 ## Tests
 
