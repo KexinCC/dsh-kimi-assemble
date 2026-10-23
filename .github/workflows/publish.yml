@@ -1,0 +1,61 @@
+name: publish
+
+# 推 tag 即发版，不需要任何人手动建 token。
+#
+# 两条路，按可用性自动选：
+#   1. npm Trusted Publishing（OIDC）：在 npm 包设置页绑定本仓库 + 本工作流名，
+#      之后 GitHub 用短时身份令牌发布，仓库里**不存任何密钥**。
+#   2. 兜底：仓库 Secrets 里的 NPM_TOKEN（如果哪天 OIDC 不可用）。
+#
+# 绑定位置：npmjs.com → 包页 → Settings → Trusted publishers → 添加
+#   publisher: GitHub Actions
+#   repository: KexinCC/dsh-kimi-assemble
+#   workflow: publish.yml
+#   environment: (留空)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write # OIDC 必需
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # 用最新 npm：Trusted Publishing 需要 11.5+
+      - name: Use a recent npm
+        run: npm install -g npm@latest
+
+      - name: Verify the tag matches package.json
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          TAG=${GITHUB_REF_NAME#v}
+          echo "package.json=$PKG tag=$TAG"
+          test "$PKG" = "$TAG" || { echo "tag and package.json version differ"; exit 1; }
+
+      - name: Offline checks
+        run: npm test
+
+      - name: Publish (trusted publishing; falls back to NPM_TOKEN)
+        run: |
+          if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "publishing with NPM_TOKEN"
+            npm publish --access public
+          else
+            echo "publishing with OIDC trusted publishing + provenance"
+            npm publish --access public --provenance
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
