@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-10-23
+
+Documentation-only patch; no runtime code changed. Published so the npm page and tarball match
+the repository.
+
+### Fixed
+
+- README (en/zh) now lists the npm install line as the primary path and keeps the plugin-market
+  index and the clone-and-install routes as alternatives.
+- `references/troubleshooting.md` corrects the warning about `link:` installs: clearing such a
+  bundle can delete *through* the junction into the source checkout (it did, twice, during this
+  release), so it now says to install the published package or a throwaway clone, and to remove a
+  leftover junction with `cmd /c rmdir` rather than a recursive delete.
+
 ## [1.0.0] — 2026-10-23
 
 First public release.
@@ -50,4 +64,5 @@ First public release.
   daemon and desktop agent; it only closes its own sockets.
 
 [Unreleased]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.0.0...HEAD
+[1.0.1]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/KexinCC/dsh-kimi-assemble/releases/tag/v1.0.0
