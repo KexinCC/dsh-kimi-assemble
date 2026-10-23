@@ -89,6 +89,9 @@ want to change; everything else falls back to the defaults.
 | `webbridgeTimeoutMs` | `60000` | per browser action |
 | `browserGroupTitle` | `DSH` | default tab group title, visible in the user's browser |
 | `browserReadMaxChars` | `20000` | default `kimi_browser_read` budget |
+| `browserVerify` | `auto` | `auto` = verify that each action changed the page; `off` = fire-and-forget (rollback switch) |
+| `browserVerifyMs` | `600` | how long to watch for a change before reporting "unchanged" (100–10000) |
+| `browserReadIncludeMeta` | `true` | attach the page-state line (url / load / scroll / focus / counts) to reads |
 | `kimicuEnabled` | `true` | when false, no desktop tools are registered |
 | `kimicuExePath` | `''` | empty = `KIMI_CU_WINDOWS_EXE` → `KIMI_CU_WINDOWS_HOME` → `%LOCALAPPDATA%\Kimi Computer Use\kimi-cu.exe` → legacy `KimiCU` directory |
 | `kimicuAutoStart` | `true` | start the agent idempotently when it is unreachable |
@@ -115,20 +118,40 @@ the skill bodies.
 
 ### Browser
 
-- **`kimi_browser_open {url, new_tab=true, group_title?, session?}`** → final URL / title / tabId
-- **`kimi_browser_read {mode=read|find|frame, query?, frame?, ref?, max_chars?, cursor?}`** →
-  accessibility tree text (with `[ref=eNNN]`) / search hits / iframe text
-- **`kimi_browser_click {selector, session?}`** — CSS or `@eNNN` / `eNNN` / `[ref=eNNN]`
-- **`kimi_browser_fill {selector, value, submit=false, session?}`**
+- **`kimi_browser_open {url, new_tab=true, wait_until=load|domcontentloaded|none, group_title?, session?}`**
+  → final URL / title / tabId / page state. Waits for load by default so the next action does not race the page.
+- **`kimi_browser_read {mode=read|find|frame|diff, include_meta?, include_screenshot?, ref?, max_chars?, cursor?}`**
+  → accessibility tree text (with `[ref=eNNN]`), a page-state line (url / load state / scroll / focused
+  element / element counts), search hits, iframe text, or **only what changed since the previous read**
+  (`mode=diff`, typically ~4% of the full payload).
+- **`kimi_browser_click {selector, verify?, session?}`** — CSS or `@eNNN` / `eNNN` / `[ref=eNNN]`.
+  Reports `changed` / `changeDetail`; a stale ref is re-read and retried once.
+- **`kimi_browser_fill {selector, value, submit=false, verify?, session?}`** — reports whether a
+  `submit=true` Enter actually changed the page (suggestion dropdowns swallow it).
+- **`kimi_browser_act {verb, ...}`** — `press`, `type`, `clear`, `select`, `check`, `uncheck`, `hover`,
+  `scroll`, `drag`, `mouse_click`, `upload`, each verified, with optional `wait_for`.
+- **`kimi_browser_wait {text|text_gone|selector|url|ready|ms, timeout_ms?}`** — wait for a condition
+  instead of re-reading in a loop; on timeout it returns the current page state.
+- **`kimi_browser_eval {code, max_chars?}`** — evaluate page JS, JSON result.
+- **`kimi_browser_dialog {action=status|accept|dismiss, text?}`** — native dialogs freeze the page;
+  click/fill/act report `dialogOpen` instead of failing, and this answers them.
 - **`kimi_browser_screenshot {selector?, full_page=false, format=png|jpeg, quality?, session?}`** →
   an image block (a path when the model route has no image input)
 - **`kimi_browser_tabs {action=list|list_all|attach|close|close_session, tab_id?}`**
 - **`kimi_browser_script`** — **two shapes**:
   - single step (escape hatch): `{action, args, session?}`, covering all 35 daemon actions
-    (wait / scroll / evaluate / network / upload / pdf / dialog …)
+    (network / upload / pdf / cdp / highlight …)
   - batch: `{steps:[{action,args,capture?}], stop_on_error?, max_result_chars?}` — 1–25 steps in
     one call
   - argument table: [`references/browser-actions.md`](references/browser-actions.md)
+
+### Why actions are verified
+
+Every mutating browser tool reports whether the page actually changed. The extension's click is a
+DOM-level dispatch: it returns success even when nothing happens, which used to make a wrong click
+look identical to a right one. `browserVerify: 'off'` restores the old fire-and-forget behaviour.
+Measured effect (6 fixtures × 5 runs, see [`bench/RESULTS.md`](https://github.com/KexinCC/dsh-kimi-assemble/blob/main/bench/RESULTS.md)): silent failures
+10 → 0, task success 37% → 100%, at the cost of ~600ms on actions that genuinely do nothing.
 
 ### Desktop
 

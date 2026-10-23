@@ -83,6 +83,9 @@ plugin_manager install_bundle  target=<上面克隆出来的目录的绝对路�
 | `webbridgeTimeoutMs` | `60000` | 单次浏览器动作超时 |
 | `browserGroupTitle` | `DSH` | 标签组默认标题（用户浏览器里可见） |
 | `browserReadMaxChars` | `20000` | `kimi_browser_read` 默认预算 |
+| `browserVerify` | `auto` | `auto` = 校验动作是否真的改变了页面；`off` = 退回「派发即成功」（回滚开关） |
+| `browserVerifyMs` | `600` | 等待变化的观察窗口，超时才判「没生效」（100–10000） |
+| `browserReadIncludeMeta` | `true` | 每次 read 附带页面状态行（url / 加载态 / 滚动 / 焦点 / 计数） |
 | `kimicuEnabled` | `true` | 关掉就不注册桌面工具 |
 | `kimicuExePath` | `''` | 空 = `KIMI_CU_WINDOWS_EXE` → `KIMI_CU_WINDOWS_HOME` → `%LOCALAPPDATA%\Kimi Computer Use\kimi-cu.exe` → 旧 `KimiCU` 目录 |
 | `kimicuAutoStart` | `true` | 连不上时幂等启动 Agent |
@@ -108,19 +111,37 @@ plugin_manager install_bundle  target=<上面克隆出来的目录的绝对路�
 
 ### 浏览器
 
-- **`kimi_browser_open {url, new_tab=true, group_title?, session?}`** → 最终 URL / 标题 / tabId
-- **`kimi_browser_read {mode=read|find|frame, query?, frame?, ref?, max_chars?, cursor?}`** →
-  无障碍树文本（带 `[ref=eNNN]`）/ 搜索命中 / iframe 文本
-- **`kimi_browser_click {selector, session?}`** —— CSS 或 `@eNNN` / `eNNN` / `[ref=eNNN]`
-- **`kimi_browser_fill {selector, value, submit=false, session?}`**
+- **`kimi_browser_open {url, new_tab=true, wait_until=load|domcontentloaded|none, group_title?, session?}`**
+  → 最终 URL / 标题 / tabId / 页面状态。默认等到加载完成，避免下一步跟页面加载赛跑
+- **`kimi_browser_read {mode=read|find|frame|diff, include_meta?, include_screenshot?, ref?, max_chars?, cursor?}`**
+  → 无障碍树文本（带 `[ref=eNNN]`）、一行页面状态（url / 加载态 / 滚动 / 焦点元素 / 元素计数）、
+  搜索命中、iframe 文本，或**只回相对上次读取的变化**（`mode=diff`，通常只有全量的 4%）
+- **`kimi_browser_click {selector, verify?, session?}`** —— CSS 或 `@eNNN` / `eNNN` / `[ref=eNNN]`；
+  会回报 `changed` / `changeDetail`，ref 过期会自动重读并重试一次
+- **`kimi_browser_fill {selector, value, submit=false, verify?, session?}`** ——
+  会回报 `submit=true` 的回车到底有没有让页面变化（联想下拉会吞掉它）
+- **`kimi_browser_act {verb, ...}`** —— `press` / `type` / `clear` / `select` / `check` / `uncheck` /
+  `hover` / `scroll` / `drag` / `mouse_click` / `upload`，都带校验，可加 `wait_for`
+- **`kimi_browser_wait {text|text_gone|selector|url|ready|ms, timeout_ms?}`** ——
+  等条件而不是反复读页面；超时会带回当时的页面状态
+- **`kimi_browser_eval {code, max_chars?}`** —— 在页面里求值，返回 JSON
+- **`kimi_browser_dialog {action=status|accept|dismiss, text?}`** —— 原生弹窗会冻结页面：
+  click/fill/act 会回 `dialogOpen` 而不是报错，用这个工具作答
 - **`kimi_browser_screenshot {selector?, full_page=false, format=png|jpeg, quality?, session?}`** →
   图片块（模型路由不支持图片时给路径）
 - **`kimi_browser_tabs {action=list|list_all|attach|close|close_session, tab_id?}`**
 - **`kimi_browser_script`** —— **两种形态**：
   - 单步（逃生口）：`{action, args, session?}`，覆盖全部 35 个 daemon action
-    （wait / scroll / evaluate / network / upload / pdf / dialog …）
+    （network / upload / pdf / cdp / highlight …）
   - 批量：`{steps:[{action,args,capture?}], stop_on_error?, max_result_chars?}` —— 一次调用 1–25 步
   - 参数表：[`references/browser-actions.md`](references/browser-actions.md)
+
+### 为什么每个动作都带校验
+
+扩展的 click 是 DOM 级派发：即使页面什么都没发生，它也回成功。所以 1.0.x 里**点错元素和点对元素
+看起来一模一样**。现在每个会改变页面的工具都会回报「页面到底变了没有」；`browserVerify: 'off'`
+可以退回旧的「派发即成功」。实测效果（6 个 fixture × 5 次，见 [`bench/RESULTS.md`](https://github.com/KexinCC/dsh-kimi-assemble/blob/main/bench/RESULTS.md)）：
+静默失败 10 → 0，任务成功率 37% → 100%，代价是「确实什么都没发生」的动作多花约 600ms 才敢下结论。
 
 ### 桌面
 

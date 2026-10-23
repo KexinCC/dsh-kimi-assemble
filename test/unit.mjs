@@ -20,6 +20,7 @@ import { CU_ACTIONS } from '../lib/tools/computer.mjs'
 import { KimiError, CODES } from '../lib/errors.mjs'
 import { buildTools } from '../lib/tools/index.mjs'
 import { clearStalePidFile } from '../lib/webbridge.mjs'
+import { diffLines, normalizeMeta, sessionState, signature } from '../lib/browser-state.mjs'
 
 let passed = 0
 let failed = 0
@@ -342,11 +343,11 @@ const ctxStub = {
 }
 const tools = buildTools({ config, ctx: ctxStub })
 
-test('工具：13 个且名字唯一', () => {
+test('工具：17 个且名字唯一', () => {
   const names = tools.map((tool) => tool.name)
-  assert.equal(names.length, 13, `实际：${names.join(', ')}`)
+  assert.equal(names.length, 17, `实际：${names.join(', ')}`)
   assert.equal(new Set(names).size, names.length)
-  for (const name of ['kimi_status', 'kimi_browser_open', 'kimi_browser_read', 'kimi_browser_click', 'kimi_browser_fill', 'kimi_browser_screenshot', 'kimi_browser_tabs', 'kimi_browser_script', 'kimi_cu_windows', 'kimi_cu_observe', 'kimi_cu_act', 'kimi_cu_launch', 'kimi_cu_script']) {
+  for (const name of ['kimi_status', 'kimi_browser_open', 'kimi_browser_read', 'kimi_browser_click', 'kimi_browser_fill', 'kimi_browser_act', 'kimi_browser_wait', 'kimi_browser_eval', 'kimi_browser_dialog', 'kimi_browser_screenshot', 'kimi_browser_tabs', 'kimi_browser_script', 'kimi_cu_windows', 'kimi_cu_observe', 'kimi_cu_act', 'kimi_cu_launch', 'kimi_cu_script']) {
     assert.ok(names.includes(name), `缺少工具 ${name}`)
   }
 })
@@ -491,6 +492,63 @@ test('truncate：短文本原样，长文本标记截断', () => {
   assert.equal(long.text, 'aaaaa')
   assert.equal(long.truncated, true)
   assert.match(long.note, /truncat/i)
+})
+
+// ---------------------------------------------------------------------------
+// 页面状态层（browser-state）：纯函数，离线可测
+// ---------------------------------------------------------------------------
+await testAsync('状态：normalizeMeta 收敛成固定形状并补默认值', async () => {
+  const meta = normalizeMeta({ url: 'https://x/', title: 'T', nodes: '12' })
+  assert.equal(meta.url, 'https://x/')
+  assert.equal(meta.nodes, 12, '数字字符串应转成数字')
+  assert.equal(meta.scrollY, 0, '缺失字段补 0')
+  assert.equal(meta.focus, '')
+})
+
+await testAsync('状态：signature 只随 url/title/ready/滚动/节点/文本长度变化', async () => {
+  const base = normalizeMeta({ url: 'a', title: 't', ready: 'complete', scrollY: 0, nodes: 10, textLen: 100 })
+  assert.equal(signature(base), signature({ ...base }), '同样输入必须同签名')
+  assert.notEqual(signature(base), signature({ ...base, scrollY: 1 }), '滚动位置变化应改变签名')
+  assert.notEqual(signature(base), signature({ ...base, nodes: 11 }), 'DOM 变化应改变签名')
+  assert.notEqual(signature(base), signature({ ...base, url: 'b' }), '导航应改变签名')
+})
+
+await testAsync('状态：diffLines 首次读取返回全部行', async () => {
+  const diff = diffLines('', 'a\nb')
+  assert.deepEqual(diff.added, ['a', 'b'])
+  assert.equal(diff.changed, true)
+})
+
+await testAsync('状态：diffLines 无变化时明确回空', async () => {
+  const diff = diffLines('a\nb\nc', 'a\nb\nc')
+  assert.equal(diff.changed, false)
+  assert.deepEqual(diff.added, [])
+  assert.deepEqual(diff.removed, [])
+})
+
+await testAsync('状态：diffLines 只报中间段的变化', async () => {
+  const before = 'head\nold1\nold2\ntail'
+  const after = 'head\nnew1\ntail'
+  const diff = diffLines(before, after)
+  assert.equal(diff.changed, true)
+  assert.deepEqual(diff.removed, ['old1', 'old2'])
+  assert.deepEqual(diff.added, ['new1'])
+})
+
+await testAsync('状态：diffLines 大段变化时收敛到上限并标记截断', async () => {
+  const before = Array.from({ length: 200 }, (_, i) => `old-${i}`).join('\n')
+  const after = Array.from({ length: 200 }, (_, i) => `new-${i}`).join('\n')
+  const diff = diffLines(before, after, { limit: 5 })
+  assert.equal(diff.truncated, true)
+  assert.equal(diff.added.length, 5)
+  assert.equal(diff.removed.length, 5)
+})
+
+await testAsync('状态：sessionState 按 session 隔离且可重置', async () => {
+  const a = sessionState('one')
+  a.snapshot = 'x'
+  assert.equal(sessionState('one').snapshot, 'x', '同一 session 应保留状态')
+  assert.equal(sessionState('two').snapshot, '', '不同 session 不应互相污染')
 })
 
 // ---------------------------------------------------------------------------
