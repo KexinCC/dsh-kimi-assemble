@@ -127,6 +127,7 @@ the skill bodies.
 - **`kimi_browser_click {selector, verify?, session?}`** — CSS or `@eNNN` / `eNNN` / `[ref=eNNN]`.
   Reports `changed` / `changeDetail`; a stale ref is re-read and retried once.
 - **`kimi_browser_fill {selector, value, submit=false, verify?, session?}`** — reports whether a
+  → `submit=true` commits for you: it clicks the form submit button (falling back to `requestSubmit()`, Esc + click, then Enter) and reports `submitStrategy`. This extension **cannot produce real key events**, so implicit Enter-to-submit never happens.
   `submit=true` Enter actually changed the page (suggestion dropdowns swallow it).
 - **`kimi_browser_act {verb, ...}`** — `press`, `type`, `clear`, `select`, `check`, `uncheck`, `hover`,
   `scroll`, `drag`, `mouse_click`, `upload`, each verified, with optional `wait_for`.

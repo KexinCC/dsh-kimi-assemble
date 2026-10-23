@@ -65,6 +65,21 @@ Daemon address: `http://127.0.0.1:10086` (the default; the real address lives in
 | `screenshot` | `format`(png/jpeg), `quality`(0-100), `selector?`, `path?`, `full_page?` | returns a file path, not base64 |
 | `save_as_pdf` | `paper_format`(letter/a4/legal/a3/tabloid), `landscape`, `scale`(0.1–2), `print_background`, `path?` | renders the current page to PDF and returns the path |
 
+## Keyboard events are not real
+
+Measured on daemon v2.0.26 / extension 2.0.24: `send_keys` and `key_type` do **not** produce DOM
+keydown events (a page listener with `capture: true` never fires; `key_type` only inserts text into
+the focused field). Consequences:
+
+- **Implicit form submission via Enter does not work.** "Pressing Enter in an input" is a browser
+  default action and needs a trusted key event. A suggestion dropdown swallowing Enter is only the
+  visible symptom — Enter does nothing at all here.
+- `kimi_browser_fill {submit: true}` therefore submits by clicking the form submit button
+  (falling back to `form.requestSubmit()`, then Esc + click, then Enter) and reports which route
+  worked as `submitStrategy`.
+- Shortcuts that depend on default actions (Ctrl+F find, Tab traversal inside widgets) are
+  unreliable for the same reason. Prefer clicking elements.
+
 ## Known limits
 
 - **iframes**: `snapshot`/`click`/`fill`/`evaluate` only see the top-level document. Take the handle

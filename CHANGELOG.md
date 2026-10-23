@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] — 2026-10-23
+
+`fill {submit: true}` now actually submits, and the reason Enter never worked is documented.
+
+### Fixed
+
+- Submitting a form used to depend on pressing Enter, which **cannot work through this extension**:
+  `send_keys` / `key_type` do not produce DOM keydown events (measured — a capture-phase listener
+  never fires, `key_type` only inserts text), so the browser never performs implicit form
+  submission. A suggestion dropdown swallowing Enter was only the visible symptom.
+- `kimi_browser_fill {submit: true}` now clicks the form submit button, falling back to
+  `form.requestSubmit()`, then Esc + click, then Enter, verifying the page after each route and
+  reporting which one worked (`submitStrategy`). Three new fixtures cover the swallowed-Enter,
+  no-button and working-form cases.
+- Change detection no longer gives up when a probe fails mid-navigation (that made a successful
+  submit look like "no change" and could trigger a second submit).
+
 ## [1.1.0] — 2026-10-23
 
 Actions now report whether they took effect, and the browser tool surface covers what used to be
@@ -113,7 +130,8 @@ First public release.
 - Uninstalling the plugin never stops, restarts, upgrades or removes the shared
   daemon and desktop agent; it only closes its own sockets.
 
-[Unreleased]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/KexinCC/dsh-kimi-assemble/releases/tag/v1.0.0

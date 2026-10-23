@@ -43,6 +43,8 @@ const ROUTES = {
     <li><a href="/slow.html">slow — content renders after 1.2s</a></li>
     <li><a href="/list.html">list — 60 rows, click row 42</a></li>
     <li><a href="/form.html">form — Enter swallowed by suggestions</a></li>
+    <li><a href="/form-suggest.html">form-suggest — first Enter only picks a suggestion</a></li>
+    <li><a href="/form-button-only.html">form-button-only — Enter does nothing</a></li>
     <li><a href="/dialog.html">dialog — confirm() blocks JS</a></li>
   </ul>`),
 
@@ -101,6 +103,46 @@ const ROUTES = {
       `document.getElementById('confirm').addEventListener('click', () => { if (window.confirm('Delete this item?')) location.href = '/dialog-done.html' })`,
     ),
 
+  // 7. 联想下拉吞回车：第一次回车只是选中建议，页面不动；Esc 关掉下拉后再回车才提交
+  '/form-suggest.html': () =>
+    page(
+      'form-suggest',
+      `<p>Type a query; suggestions pop up and the first Enter only picks one.</p>
+       <form id="f2"><input id="q2" name="q2" placeholder="Search" autocomplete="off"><button id="go2" type="submit">Go</button></form>
+       <ul id="sug2" hidden><li>suggestion-a</li><li>suggestion-b</li></ul>`,
+      `const q = document.getElementById("q2")
+       const sug = document.getElementById("sug2")
+       let open = false
+       q.addEventListener("input", () => { open = q.value.length > 0; sug.hidden = !open })
+       q.addEventListener("keydown", (e) => {
+         if (e.key !== "Enter") return
+         if (open) { e.preventDefault(); open = false; sug.hidden = true; return }  // 吞掉回车，只关下拉
+       })
+       document.getElementById("f2").addEventListener("submit", (e) => { e.preventDefault(); location.href = "/form-suggest-done.html" })`,
+    ),
+
+  // 8. 回车完全无效：只有点提交按钮才提交
+  '/form-button-only.html': () =>
+    page(
+      'form-button-only',
+      `<p>Enter does nothing here; only the button submits.</p>
+       <form id="f3"><input id="q3" name="q3" placeholder="Value"><button id="go3" type="submit">Commit</button></form>`,
+      `document.getElementById("q3").addEventListener("keydown", (e) => { if (e.key === "Enter") e.preventDefault() })
+       document.getElementById("f3").addEventListener("submit", (e) => { e.preventDefault(); location.href = "/form-button-only-done.html" })`,
+    ),
+
+  // 9. 对照：回车就能提交的正常表单
+  '/form-plain.html': () =>
+    page(
+      'form-plain',
+      `<p>Enter submits normally here.</p>
+       <form id="f4"><input id="q4" name="q4" placeholder="Value"><button id="go4" type="submit">Send</button></form>`,
+      `document.getElementById("f4").addEventListener("submit", (e) => { e.preventDefault(); location.href = "/form-plain-done.html" })`,
+    ),
+
+  '/form-plain-done.html': () => page('form-plain done', '<p id="mark">PLAIN_OK</p>'),
+  '/form-suggest-done.html': () => page('form-suggest done', '<p id="mark">SUGGEST_OK</p>'),
+  '/form-button-only-done.html': () => page('form-button-only done', '<p id="mark">BUTTON_OK</p>'),
   '/done.html': () => page('click-nav done', '<p id="mark">NAV_OK</p>'),
   '/row.html': () => page('row done', '<p id="mark">ROW_OK</p>'),
   '/form-done.html': () => page('form done', '<p id="mark">FORM_OK</p>'),

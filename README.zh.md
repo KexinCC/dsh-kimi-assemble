@@ -119,6 +119,7 @@ plugin_manager install_bundle  target=<上面克隆出来的目录的绝对路�
 - **`kimi_browser_click {selector, verify?, session?}`** —— CSS 或 `@eNNN` / `eNNN` / `[ref=eNNN]`；
   会回报 `changed` / `changeDetail`，ref 过期会自动重读并重试一次
 - **`kimi_browser_fill {selector, value, submit=false, verify?, session?}`** ——
+  → `submit=true` 会替你提交：点表单提交按钮（兜底 `requestSubmit()` → Esc 后重点 → 回车），并回报 `submitStrategy`。注意本扩展**产生不了真实键盘事件**，所以「输入框里按回车提交」不会发生。
   会回报 `submit=true` 的回车到底有没有让页面变化（联想下拉会吞掉它）
 - **`kimi_browser_act {verb, ...}`** —— `press` / `type` / `clear` / `select` / `check` / `uncheck` /
   `hover` / `scroll` / `drag` / `mouse_click` / `upload`，都带校验，可加 `wait_for`

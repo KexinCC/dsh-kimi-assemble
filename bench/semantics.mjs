@@ -105,13 +105,17 @@ await check('browserVerify=off 时退回「派发即成功」（回滚开关有�
   await call('kimi_browser_tabs', { action: 'close_session' })
 })
 
-await check('fill(submit) 报告回车被吞（changed=false），便于改点按钮', async () => {
+await check('fill(submit) 在回车被吞的表单上自动恢复并提交（form.html）', async () => {
+  server.resetHits()
   const s = arm.session('form-enter')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form.html` })
   const result = await call('kimi_browser_fill', { selector: '#q', value: 'kimi', submit: true })
   assert.equal(result.filled, true)
-  assert.equal(result.changed, false, 'Enter 被 preventDefault，页面不该变化')
+  assert.equal(result.changed, true, '三级恢复应当把回车被吞的表单提交掉')
+  assert.equal(result.submitStrategy, 'click-submit')
+  await new Promise((r) => setTimeout(r, 300))
+  assert.ok(server.hits.includes('/form-done.html'))
   await call('kimi_browser_tabs', { action: 'close_session' })
 })
 
@@ -175,6 +179,47 @@ await check('act(select/check) 走 schema 校验并回报变化', async () => {
   await assert.rejects(() => call('kimi_browser_act', { verb: 'teleport' }), /teleport|unknown/i)
   // 缺参数也应当被点名
   await assert.rejects(() => call('kimi_browser_act', { verb: 'select' }), /selector/i)
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
+await check('fill(submit) 在有联想下拉的表单上仍能提交（点按钮绕开下拉）', async () => {
+  server.resetHits()
+  const s = arm.session('submit-suggest')
+  const call = arm.chain(s)
+  await call('kimi_browser_open', { url: `${server.url}/form-suggest.html` })
+  const result = await call('kimi_browser_fill', { selector: '#q2', value: 'kimi', submit: true })
+  assert.equal(result.filled, true)
+  assert.equal(result.changed, true, '三级恢复应当让它最终提交成功')
+  assert.equal(result.submitStrategy, 'click-submit', '应当直接点提交按钮，绕开联想下拉')
+  await new Promise((r) => setTimeout(r, 300))
+  assert.ok(server.hits.includes('/form-suggest-done.html'), '应当到达提交后的页面')
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
+await check('fill(submit) 在回车完全无效的表单上靠点按钮提交', async () => {
+  server.resetHits()
+  const s = arm.session('submit-button')
+  const call = arm.chain(s)
+  await call('kimi_browser_open', { url: `${server.url}/form-button-only.html` })
+  const result = await call('kimi_browser_fill', { selector: '#q3', value: 'v', submit: true })
+  assert.equal(result.changed, true)
+  assert.equal(result.submitStrategy, 'click-submit', '应当点提交按钮')
+  await new Promise((r) => setTimeout(r, 300))
+  assert.ok(server.hits.includes('/form-button-only-done.html'))
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
+await check('fill(submit) 在普通表单上直接点按钮提交（回车不产生 keydown）', async () => {
+  server.resetHits()
+  const s = arm.session('submit-plain')
+  const call = arm.chain(s)
+  await call('kimi_browser_open', { url: `${server.url}/form-plain.html` })
+  const result = await call('kimi_browser_fill', { selector: '#q4', value: 'x', submit: true })
+  assert.equal(result.submitted, true)
+  assert.equal(result.changed, true)
+  assert.equal(result.submitStrategy, 'click-submit', '正常表单也走点击路径（回车不产生 keydown）')
+  await new Promise((r) => setTimeout(r, 300))
+  assert.ok(server.hits.includes('/form-plain-done.html'))
   await call('kimi_browser_tabs', { action: 'close_session' })
 })
 
