@@ -94,11 +94,11 @@
       "versions": [
         {
           "version": "1.0.0",
-          "publishTimestamp": 1792717021,
+          "publishTimestamp": 1792717533,
           "source": {
             "type": "git",
             "url": "https://github.com/KexinCC/dsh-kimi-assemble",
-            "commit": "376b4cea9cc4aababaeec482c57c5daf1c0f25f0"
+            "commit": "641ca137d7d60ad33d6df36143805c44f555e991"
           },
           "engines": {
             "dsh": ">=0.2.0"
