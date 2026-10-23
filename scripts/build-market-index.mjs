@@ -69,8 +69,8 @@ const index = {
         zh: 'Kimi 能力本地集成',
       },
       description: {
-        en: 'Native tools for the Kimi browser extension (WebBridge) and KimiCU desktop control: kimi_browser_* drives your real logged-in browser, kimi_cu_* observes and operates Windows windows. Batch scripts run many actions in one model round.',
-        zh: '把 Kimi 浏览器扩展（WebBridge）与 KimiCU 桌面控制接成本地原生工具：kimi_browser_* 操作用户真实浏览器，kimi_cu_* 观察与操作 Windows 窗口；批量脚本一次调用跑完多步。',
+        en: 'REQUIRES the official Kimi browser extension first (Chrome/Edge, no Kimi account needed) and, for desktop control, the KimiCU runtime on Windows — this plugin is the bridge, not the runtime. With those present it registers native tools: kimi_browser_* drives your real logged-in browser, kimi_cu_* observes and operates Windows windows, and batch scripts run many actions in one model round.',
+        zh: '需要先安装 Kimi 官方浏览器扩展（Chrome/Edge，本地调用不需要 Kimi 账号）；桌面控制还需要 Windows 上的 KimiCU 运行时 —— 本插件是桥，不带运行时。两者就绪后注册原生工具：kimi_browser_* 操作你真实登录的浏览器，kimi_cu_* 观察与操作 Windows 窗口，批量脚本一次调用跑完多步。',
       },
       icon: inlineIcon(),
       author: manifest.author,

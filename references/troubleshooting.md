@@ -11,7 +11,7 @@ call.
 | `KIMI_WEBRIDGE_DOWN` | cannot reach `127.0.0.1:10086`, and the automatic `start` did not bring it up | run `~/.kimi-webbridge/bin/kimi-webbridge.exe start` by hand and read its port/error output |
 | `KIMI_WEBRIDGE_PORT_BUSY` | something answered on the port with non-JSON (another program owns it) | change `~/.kimi-webbridge/daemon.addr` to a free port and set the same address in the extension (`ws://127.0.0.1:<port>/ws`) |
 | `KIMI_WEBRIDGE_EXTENSION` | the daemon is up but the extension is not connected | open the Kimi side panel in Chrome → Settings → local agent remote control, and check the address matches |
-| `KIMI_WEBRIDGE_VERSION` | the extension is behind | update it: https://www.kimi.com/products/kimi-webbridge |
+| `KIMI_WEBRIDGE_VERSION` | the extension is behind | update it: https://www.kimi.com/products/kimi-browser-extension |
 | `KIMI_WEBRIDGE_TIMEOUT` | one action timed out | a page script may be blocking; check `kimi_status`; restart the daemon only if it is really stuck (that ends every browser session) |
 | `KIMI_WEBRIDGE_TOOL` | the daemon explicitly refused (missing argument, no such element, no tab …) | fix the argument the message names; "session has no tab" means navigate/find_tab first |
 | `KIMI_WEBRIDGE_BAD_ENVELOPE` | HTTP status is not 200 and the body is not an error envelope | usually a daemon version mismatch; upgrade `kimi-webbridge` itself |

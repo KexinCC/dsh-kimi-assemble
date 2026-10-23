@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Kimi 能力本地集成",
-    "description": "把 Kimi 浏览器扩展（WebBridge）与 KimiCU 桌面控制接成本地原生工具：kimi_browser_* 操作用户真实浏览器，kimi_cu_* 观察与操作 Windows 窗口；批量脚本一次调用跑完多步。"
+    "description": "把 Kimi 浏览器扩展与 KimiCU 桌面控制接成本地原生工具。需先安装 Kimi 官方浏览器扩展（本地调用无需 Kimi 账号）；桌面控制另需 Windows 上的 KimiCU —— 本插件是桥，不带运行时。"
   }
 }

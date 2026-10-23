@@ -19,11 +19,25 @@ field, and a connection failure comes with the next step.
 
 ## Install
 
-Requirements:
+### Read this first: what you must already have
 
-- DeepSeek Harness `>= 0.2.0` (verified on `0.2.1-rc.2`), Node `>= 22`
-- **Browser half**: the Kimi browser extension plus the WebBridge daemon
-- **Desktop half**: Windows and the KimiCU runtime (`kimi-cu.exe`)
+This plugin is a **bridge**, not a bundled implementation. It drives two Kimi components that live
+on your machine; without them the tools answer `KIMI_WEBRIDGE_DOWN` / `KIMI_CU_NOT_INSTALLED` on
+every call — with install instructions attached, because a plugin must not download and execute
+remote installers by itself.
+
+| You want… | You need | How to get it |
+|---|---|---|
+| browser control | Chrome or Edge + the **Kimi browser extension**. The local-Agent path needs **no Kimi account** (only the sidebar does). | 1) install the "Kimi" extension from the Chrome Web Store or Edge Add-ons (or the [manual install](https://www.kimi.com/products/kimi-browser-extension)); 2) open the extension sidebar → Settings → “本地 Agent 远程控制” → click **去连接 / Connect**; 3) copy the install command shown in that dialog into a terminal and run it — this installs the local daemon under `~/.kimi-webbridge`. [FAQ](https://www.kimi.com/help/kimi-webbridge/kimi-webbridge-faq) |
+| desktop control | Windows + the **KimiCU runtime** (`kimi-cu.exe`) | download and run [setup_windows.cmd](https://cdn.kimi.com/kimi-computer-use-windows/latest/setup_windows.cmd) in a terminal, or set `kimicuExePath` in the config to an existing copy |
+| either | DeepSeek Harness `>= 0.2.0` (verified on `0.2.1-rc.2`), Node `>= 22` | — |
+
+Only want the browser half? Set `kimicuEnabled: false` — the five `kimi_cu_*` tools then never
+register, on any OS.
+
+A fresh machine is wired once `kimi_status` reports both bridges as installed; after that the
+plugin discovers, starts and reconnects to both components automatically (including clearing a
+stale daemon pid file left by an unclean shutdown).
 
 ```text
 plugin_manager install_bundle  target=dsh-kimi-assemble@1.0.0

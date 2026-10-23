@@ -18,11 +18,22 @@ UTF-8 全程无损，参数错误会点到字段，连接类失败会给出下�
 
 ## 安装
 
-前提：
+### 先读这个：你得先有什么
 
-- DeepSeek Harness `>= 0.2.0`（已在 `0.2.1-rc.2` 上验证），Node `>= 22`
-- **浏览器部分**：Kimi 浏览器扩展 + WebBridge daemon
-- **桌面部分**：Windows + KimiCU 运行时（`kimi-cu.exe`）
+本插件是**桥**，不是自带实现。它驱动的是装在你机器上的两个 Kimi 组件；缺了它们，每个
+工具调用都会回 `KIMI_WEBRIDGE_DOWN` / `KIMI_CU_NOT_INSTALLED` —— 并附安装指引（插件自己
+绝不下载并执行远程安装器，这是安全底线）。
+
+| 你想要… | 你需要 | 怎么装 |
+|---|---|---|
+| 浏览器控制 | Chrome 或 Edge + **Kimi 浏览器扩展**。本地 Agent 这条路**不需要 Kimi 账号**（只有侧边栏需要）。 | 1) 在 Chrome Web Store / Edge Add-ons 装 “Kimi” 扩展（或[官网手动安装](https://www.kimi.com/products/kimi-browser-extension)）；2) 打开扩展侧边栏 → 设置 → 「本地 Agent 远程控制」→ 点**「去连接」**；3) 把弹窗里给出的安装命令复制到终端执行 —— 这一步会把本地服务装到 `~/.kimi-webbridge`。[常见问题](https://www.kimi.com/help/kimi-webbridge/kimi-webbridge-faq) |
+| 桌面控制 | Windows + **KimiCU 运行时**（`kimi-cu.exe`） | 在终端下载并运行 [setup_windows.cmd](https://cdn.kimi.com/kimi-computer-use-windows/latest/setup_windows.cmd)，或在配置里用 `kimicuExePath` 指定已有的 exe |
+| 两者任一 | DeepSeek Harness `>= 0.2.0`（已在 `0.2.1-rc.2` 上验证），Node `>= 22` | — |
+
+只想要浏览器能力？设 `kimicuEnabled: false`，五个 `kimi_cu_*` 工具就不会注册（任何系统都一样）。
+
+新机器上跑一次 `kimi_status`，两条桥都报“已安装”就绪；之后插件的发现、启动、重连全部自动
+（包括清掉非正常关机残留的 daemon pid 文件）。
 
 ```text
 plugin_manager install_bundle  target=dsh-kimi-assemble@1.0.0

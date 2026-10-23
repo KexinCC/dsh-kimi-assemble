@@ -25,3 +25,5 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+.git-commit-msg.txt

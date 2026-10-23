@@ -120,7 +120,7 @@ await check('版本提示 → KIMI_WEBRIDGE_VERSION + 升级链接', async () =>
       () => wb.call(config, 'snapshot', {}, { session: 'fault-test' }),
       (error) => {
         assert.equal(error.code, CODES.WEBRIDGE_VERSION)
-        assert.match(error.message, /kimi-webbridge/)
+        assert.match(error.message, /kimi-browser-extension/)
         return true
       },
     )

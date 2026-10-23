@@ -32,6 +32,15 @@ function check(name, fn) {
 const CJK = /[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/
 const PLACEHOLDER = /\{(\w+)\}/g
 
+/**
+ * 允许在 en 文案里出现 CJK 的键：它们引用的是 Kimi 扩展/桌面端界面上的
+ * **真实按钮名**（中文系统上就是这么显示的），英文用户也需要照着找。
+ * 加键必须在这里写明理由；除此之外 en 里出现 CJK 一律视为漏翻译。
+ */
+const CJK_ALLOWED_IN_EN = new Set([
+  'status.browserNotInstalled', // 引用扩展侧边栏按钮「本地 Agent 远程控制 / 去连接」
+])
+
 /** 抽出模板里的占位符名字集合。 */
 function placeholders(template) {
   return new Set([...String(template).matchAll(PLACEHOLDER)].map((match) => match[1]))
@@ -48,9 +57,14 @@ check('catalog：en 与 zh 的键集合完全相同', () => {
   assert.ok(enKeys.size > 100, `catalog looks too small: ${enKeys.size}`)
 })
 
-check('catalog：en 的值不含 CJK 字符', () => {
-  const offenders = [...enKeys].filter((key) => CJK.test(String(catalogValue('en', key))))
+check('catalog：en 的值不含 CJK 字符（白名单除外，见 CJK_ALLOWED_IN_EN）', () => {
+  const offenders = [...enKeys].filter(
+    (key) => !CJK_ALLOWED_IN_EN.has(key) && CJK.test(String(catalogValue('en', key))),
+  )
   assert.deepEqual(offenders, [], `untranslated keys: ${offenders.join(', ')}`)
+  // 白名单本身不能失效：里面的键必须真的含 CJK，否则删掉它
+  const stale = [...CJK_ALLOWED_IN_EN].filter((key) => !CJK.test(String(catalogValue('en', key))))
+  assert.deepEqual(stale, [], `whitelist entries without CJK any more: ${stale.join(', ')}`)
 })
 
 check('catalog：每个键的占位符在两种语言里一致', () => {

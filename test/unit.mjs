@@ -7,6 +7,10 @@
  * ============================================================================
  */
 import assert from 'node:assert/strict'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { spawn } from 'node:child_process'
 
 import { encodeFrame, FrameReader, defaultPipePath, CU_METHODS, CU_METHOD_ARGS } from '../lib/kimicu.mjs'
 import { resolveConfig, DEFAULTS } from '../lib/config.mjs'
@@ -15,6 +19,7 @@ import { normalizeSelector, sessionNameFor, BROWSER_ACTIONS } from '../lib/tools
 import { CU_ACTIONS } from '../lib/tools/computer.mjs'
 import { KimiError, CODES } from '../lib/errors.mjs'
 import { buildTools } from '../lib/tools/index.mjs'
+import { clearStalePidFile } from '../lib/webbridge.mjs'
 
 let passed = 0
 let failed = 0
@@ -54,6 +59,71 @@ async function testAsync(name, fn) {
 // ---------------------------------------------------------------------------
 // 1. 帧编解码
 // ---------------------------------------------------------------------------
+
+/** 造一个带 ~/.kimi-webbridge/daemon.pid 的临时 home（webbridgeHome 会拼 .kimi-webbridge 子目录）。 */
+function fakeWebbridgeHome() {
+  const dir = mkdtempSync(join(tmpdir(), 'kimi-pid-'))
+  const home = join(dir, '.kimi-webbridge')
+  mkdirSync(home, { recursive: true })
+  return { dir, home, env: { USERPROFILE: dir, HOME: dir }, pidFile: join(home, 'daemon.pid') }
+}
+
+await testAsync('pid 自愈：死进程的 pid 文件被清掉', async () => {
+  const { dir, env, pidFile } = fakeWebbridgeHome()
+  try {
+    // 起一个立即退出的子进程，拿一个「确定已死」的 pid
+    const child = spawn(process.execPath, ['-e', 'process.exit(0)'], { stdio: 'ignore' })
+    const deadPid = child.pid
+    await new Promise((resolve) => child.on('exit', resolve))
+    writeFileSync(pidFile, String(deadPid), 'utf8')
+
+    assert.equal(await clearStalePidFile(env), true, '死进程的 pid 文件应当被清掉')
+    assert.equal(existsSync(pidFile), false, '文件应当已删除')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+await testAsync('pid 自愈：活进程的 pid 文件绝不动', async () => {
+  const { dir, env, pidFile } = fakeWebbridgeHome()
+  try {
+    const child = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' })
+    try {
+      await new Promise((resolve) => child.on('spawn', resolve))
+      writeFileSync(pidFile, String(child.pid), 'utf8')
+
+      assert.equal(await clearStalePidFile(env), false, '活进程时绝不能动文件')
+      assert.equal(existsSync(pidFile), true, '文件必须原样保留')
+      assert.equal(readFileSync(pidFile, 'utf8'), String(child.pid), '内容必须未改')
+    } finally {
+      child.kill()
+      await new Promise((resolve) => child.on('exit', resolve))
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+await testAsync('pid 自愈：损坏的 pid 文件被清掉', async () => {
+  const { dir, env, pidFile } = fakeWebbridgeHome()
+  try {
+    writeFileSync(pidFile, 'not-a-pid', 'utf8')
+    assert.equal(await clearStalePidFile(env), true)
+    assert.equal(existsSync(pidFile), false)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+await testAsync('pid 自愈：没有 pid 文件时安全返回', async () => {
+  const { dir, env } = fakeWebbridgeHome()
+  try {
+    assert.equal(await clearStalePidFile(env), false)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 await testAsync('帧：整帧往返', async () => {
   const frame = encodeFrame({ id: 1, ok: true, text: '中文 ✓' })
   const reader = new FrameReader()

@@ -99,7 +99,7 @@ check('运行必需文件都在包里', () => {
 check('locale 与 references 在包里', () => {
   assert.ok(has('locale/en.json'), 'missing locale/en.json')
   assert.ok(has('locale/zh.json'), 'missing locale/zh.json')
-  for (const ref of ['references/browser-actions.md', 'references/computer-api.md', 'references/troubleshooting.md']) {
+  for (const ref of ['references/app-quirks.md', 'references/browser-actions.md', 'references/computer-api.md', 'references/troubleshooting.md']) {
     assert.ok(has(ref), `missing ${ref}`)
   }
 })
