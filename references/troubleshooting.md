@@ -59,12 +59,15 @@ These are not tool errors — they happen before the plugin runs.
 | symptom | meaning | handling |
 |---|---|---|
 | `dsh: connection to github.com timed out after 5000ms` while installing a `git+https://…` spec | the plugin manager probes GitHub before fetching, and that probe does not use your proxy/VPN config. Common behind a firewall | install from a clone instead: `git clone <repo>` (with your proxy env set), then `plugin_manager install_bundle target=<abs path to the clone>` |
-| `[ERR_PNPM_EPERM] … rename '…dsh-kimi-assemble_tmp_…' -> '…dsh-kimi-assemble'` | the previous install left a link/junction that is still held | remove `node_modules/dsh-kimi-assemble` inside the profile **as a link, not recursively into its target** (`Remove-Item` on a junction can follow it), then install again |
+| `[ERR_PNPM_EPERM] … rename '…dsh-kimi-assemble_tmp_…' -> '…dsh-kimi-assemble'` | a previous install left a junction at `node_modules/dsh-kimi-assemble` that blocks the rename | clear the link **without following it**: `cmd /c rmdir <profile>\node_modules\dsh-kimi-assemble` (never `Remove-Item -Recurse`), then install again |
 | `already-installed` | one bundle per package name | `plugin_manager remove_bundle` first, then install |
 
-> ⚠️ When the bundle is installed from a source directory (`link:`), the profile's
-> `node_modules/dsh-kimi-assemble` is a junction to that directory. Never delete it with a
-> recursive delete — that can follow the junction and remove the target checkout (including
+> ⚠️ **Do not install this plugin into a profile from its own git working copy.** With a
+> `link:` install the profile's `node_modules/dsh-kimi-assemble` is a junction to your checkout,
+> and removing that bundle can delete *through* the junction — wiping the checkout, `.git`
+> included. Observed twice on the reference machine. Prefer the published package, or a throwaway
+> clone used only for the install. If a leftover junction must go, `cmd /c rmdir <path>` removes
+> the link and leaves the target untouched.
 > `.git`). Remove the bundle through `plugin_manager`, which unlinks it properly.
 
 ## Order of investigation
