@@ -39,14 +39,20 @@ A fresh machine is wired once `kimi_status` reports both bridges as installed; a
 plugin discovers, starts and reconnects to both components automatically (including clearing a
 stale daemon pid file left by an unclean shutdown).
 
-**Install from the plugin market (recommended).** Add this index URL under Discover → index
-sources, then install the plugin from there:
+**Install from npm (simplest):**
+
+```text
+plugin_manager install_bundle  target=dsh-kimi-assemble@1.0.0
+```
+
+**Or from the plugin market:** add this index URL under Discover → index sources, then install
+the plugin from there:
 
 ```text
 https://raw.githubusercontent.com/KexinCC/dsh-kimi-assemble/main/market/index.json
 ```
 
-**Or clone and install the checkout directly** (works without any registry):
+**Or clone and install the checkout directly** (no registry involved):
 
 ```bash
 git clone https://github.com/KexinCC/dsh-kimi-assemble.git
