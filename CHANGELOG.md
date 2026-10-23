@@ -49,5 +49,5 @@ First public release.
 - Uninstalling the plugin never stops, restarts, upgrades or removes the shared
   daemon and desktop agent; it only closes its own sockets.
 
-[Unreleased]: https://github.com/dsh-community/dsh-kimi-assemble/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/dsh-community/dsh-kimi-assemble/releases/tag/v1.0.0
+[Unreleased]: https://github.com/KexinCC/dsh-kimi-assemble/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/KexinCC/dsh-kimi-assemble/releases/tag/v1.0.0

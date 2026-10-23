@@ -16,13 +16,13 @@
   ],
   "license": "MIT",
   "author": "dsh-kimi-assemble contributors",
-  "homepage": "https://github.com/dsh-community/dsh-kimi-assemble#readme",
+  "homepage": "https://github.com/KexinCC/dsh-kimi-assemble#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dsh-community/dsh-kimi-assemble.git"
+    "url": "git+https://github.com/KexinCC/dsh-kimi-assemble.git"
   },
   "bugs": {
-    "url": "https://github.com/dsh-community/dsh-kimi-assemble/issues"
+    "url": "https://github.com/KexinCC/dsh-kimi-assemble/issues"
   },
   "type": "module",
   "main": "index.js",

@@ -35,17 +35,23 @@ UTF-8 全程无损，参数错误会点到字段，连接类失败会给出下�
 新机器上跑一次 `kimi_status`，两条桥都报“已安装”就绪；之后插件的发现、启动、重连全部自动
 （包括清掉非正常关机残留的 daemon pid 文件）。
 
-```text
-plugin_manager install_bundle  target=dsh-kimi-assemble@1.0.0
-```
-
-装好后 `cordis_inspect_query(Tool.listTools)` 应出现 13 个 `kimi_*` 工具。
-
-**想用市集索引？** 在「发现 → 索引源」里填下面这个地址，就能直接搜索并安装：
+**从市集安装（推荐）**：在「发现 → 索引源」里填下面这个地址，然后在列表里安装本插件：
 
 ```text
-https://dsh-community.github.io/dsh-kimi-assemble/index.json
+https://raw.githubusercontent.com/KexinCC/dsh-kimi-assemble/main/market/index.json
 ```
+
+**或者克隆下来直接从目录装**（不依赖任何 registry）：
+
+```bash
+git clone https://github.com/KexinCC/dsh-kimi-assemble.git
+```
+
+```text
+plugin_manager install_bundle  target=<上面克隆出来的目录的绝对路径>
+```
+
+两种方式装好后，`cordis_inspect_query(Tool.listTools)` 都应出现 13 个 `kimi_*` 工具。
 
 **从旧的 KimiCU MCP 过来？** 建议把那一行停用。它暴露
 `mcp__kimicu__js` / `js_reset` / `js_add_node_module_dir`，而本插件已覆盖全部 16 个 KimiCU

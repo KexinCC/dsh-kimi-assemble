@@ -13,14 +13,29 @@
  *   - icon 可以是 data: base64（≤32 KiB 解码后），或与索引同源的相对路径。
  *
  * 图标用内联 base64：索引与仓库分开发布时不会出现相对路径失效。
+ *
+ * 版本来源二选一：
+ *   - git（默认）：读 HEAD 的 commit，生成 commit-pinned 的 git 源。用这种方式不需要
+ *     任何 npm 账号，装的时候就锁在某个确切提交上。
+ *   - npm：`KIMI_MARKET_SOURCE=npm node scripts/build-market-index.mjs`，需要包已经发布。
  * ============================================================================
  */
+import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..')
 const manifest = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
+const SOURCE_KIND = (process.env.KIMI_MARKET_SOURCE ?? 'git').trim().toLowerCase()
+
+/** 读 HEAD 的完整 commit（可用 KIMI_MARKET_COMMIT 覆盖，便于在 CI 里显式指定）。 */
+function headCommit() {
+  const fromEnv = (process.env.KIMI_MARKET_COMMIT ?? '').trim()
+  const commit = fromEnv || execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim()
+  if (!/^[0-9a-f]{40}$/.test(commit)) throw new Error(`not a 40-hex commit: ${JSON.stringify(commit)}`)
+  return commit
+}
 
 const ICON_PATH = join(ROOT, 'icon.svg')
 const INLINE_ICON_LIMIT = 32 * 1024
@@ -89,7 +104,10 @@ const index = {
         {
           version: manifest.version,
           publishTimestamp: Math.floor(Date.now() / 1000),
-          source: { type: 'npm' },
+          source:
+            SOURCE_KIND === 'npm'
+              ? { type: 'npm' }
+              : { type: 'git', url: repoUrl, commit: headCommit() },
           engines: { dsh: manifest.engines.dsh },
         },
       ],
@@ -101,7 +119,16 @@ const outDir = join(ROOT, 'market')
 mkdirSync(outDir, { recursive: true })
 writeFileSync(join(outDir, 'index.json'), `${JSON.stringify(index, null, 2)}\n`, 'utf8')
 
-console.log(`market/index.json written (${manifest.name}@${manifest.version})`)
+const source = index.plugins[0].versions[0].source
+const where =
+  source.type === 'git'
+    ? `${source.url} @ ${source.commit.slice(0, 7)}`
+    : 'npm (published)'
+console.log(`market/index.json written (${manifest.name}@${manifest.version}, source=${source.type})`)
+console.log(`  install from: ${where}`)
 console.log(`icon inlined: ${Buffer.from(index.plugins[0].icon.split(',')[1], 'base64').length} bytes`)
 console.log('Next: node test/market.mjs')
-console.log('Then publish this file (GitHub Pages, raw URL, or any static host) and add its URL as an index source.')
+console.log('Then serve this file over https (raw.githubusercontent.com / GitHub Pages / any static host) and add its URL as an index source.')
+if (source.type === 'git') {
+  console.log('Note: the commit above must already be pushed — the index pins an exact commit.')
+}

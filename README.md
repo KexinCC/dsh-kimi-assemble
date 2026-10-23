@@ -39,17 +39,24 @@ A fresh machine is wired once `kimi_status` reports both bridges as installed; a
 plugin discovers, starts and reconnects to both components automatically (including clearing a
 stale daemon pid file left by an unclean shutdown).
 
-```text
-plugin_manager install_bundle  target=dsh-kimi-assemble@1.0.0
-```
-
-After installing, `cordis_inspect_query(Tool.listTools)` should list 13 `kimi_*` tools.
-
-**Prefer an index?** Add this URL under Discover → index sources and install from there:
+**Install from the plugin market (recommended).** Add this index URL under Discover → index
+sources, then install the plugin from there:
 
 ```text
-https://dsh-community.github.io/dsh-kimi-assemble/index.json
+https://raw.githubusercontent.com/KexinCC/dsh-kimi-assemble/main/market/index.json
 ```
+
+**Or clone and install the checkout directly** (works without any registry):
+
+```bash
+git clone https://github.com/KexinCC/dsh-kimi-assemble.git
+```
+
+```text
+plugin_manager install_bundle  target=<absolute path to that clone>
+```
+
+Either way, `cordis_inspect_query(Tool.listTools)` should then list 13 `kimi_*` tools.
 
 **Coming from the old KimiCU MCP?** Disable that row. It exposes
 `mcp__kimicu__js` / `js_reset` / `js_add_node_module_dir`; this plugin covers all 16 KimiCU
