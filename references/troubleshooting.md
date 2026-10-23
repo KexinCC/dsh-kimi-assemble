@@ -52,6 +52,21 @@ with a fresh observe. **Do not** automatically replay the failed input.
 | `KIMI_ARGS` | invalid tool arguments | fix what the message names; exclusive arguments (`element_index` vs `x/y`) and enum values are listed in it |
 | `KIMI_CONFIG` | this row's config in `cordis.patch.yml` is invalid | see the range/format in the message; an address must be `host:port` |
 
+## Installing the plugin itself
+
+These are not tool errors — they happen before the plugin runs.
+
+| symptom | meaning | handling |
+|---|---|---|
+| `dsh: connection to github.com timed out after 5000ms` while installing a `git+https://…` spec | the plugin manager probes GitHub before fetching, and that probe does not use your proxy/VPN config. Common behind a firewall | install from a clone instead: `git clone <repo>` (with your proxy env set), then `plugin_manager install_bundle target=<abs path to the clone>` |
+| `[ERR_PNPM_EPERM] … rename '…dsh-kimi-assemble_tmp_…' -> '…dsh-kimi-assemble'` | the previous install left a link/junction that is still held | remove `node_modules/dsh-kimi-assemble` inside the profile **as a link, not recursively into its target** (`Remove-Item` on a junction can follow it), then install again |
+| `already-installed` | one bundle per package name | `plugin_manager remove_bundle` first, then install |
+
+> ⚠️ When the bundle is installed from a source directory (`link:`), the profile's
+> `node_modules/dsh-kimi-assemble` is a junction to that directory. Never delete it with a
+> recursive delete — that can follow the junction and remove the target checkout (including
+> `.git`). Remove the bundle through `plugin_manager`, which unlinks it properly.
+
 ## Order of investigation
 
 1. `kimi_status` — a one-line verdict for both bridges plus the next step.
