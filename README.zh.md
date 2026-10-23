@@ -38,7 +38,7 @@ UTF-8 全程无损，参数错误会点到字段，连接类失败会给出下�
 **从 npm 安装（最简单）：**
 
 ```text
-plugin_manager install_bundle  target=dsh-kimi-assemble@1.0.0
+plugin_manager install_bundle  target=dsh-kimi-assemble@1.1.0
 ```
 
 **或者从市集安装**：在「发现 → 索引源」里填下面这个地址，然后在列表里安装本插件：

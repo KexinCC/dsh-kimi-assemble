@@ -42,7 +42,7 @@ stale daemon pid file left by an unclean shutdown).
 **Install from npm (simplest):**
 
 ```text
-plugin_manager install_bundle  target=dsh-kimi-assemble@1.0.0
+plugin_manager install_bundle  target=dsh-kimi-assemble@1.1.0
 ```
 
 **Or from the plugin market:** add this index URL under Discover → index sources, then install
