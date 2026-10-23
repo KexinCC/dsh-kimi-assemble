@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Prerequisite setup can now be driven by an agent, with the human-only parts called out explicitly.
+
+### Added
+
+- `scripts/doctor.mjs` (published as the `kimi-assemble-doctor` bin): preflight for both bridges with
+  `--json` output shaped for agents — each finding carries `nextActions[]` tagged `kind: "run"`
+  (an agent may execute it) or `kind: "user"` (only a human can). Exit codes: `0` ready, `2` needs a
+  human, `3` only the desktop runtime is missing and is installable.
+- `--install-desktop`: downloads and runs the official KimiCU installer
+  (`https://cdn.kimi.com/kimi-computer-use-windows/latest/setup_windows.cmd`) — opt-in only, prints the
+  URL first, then re-checks.
+- `--addr=` to preflight a non-default daemon address.
+- README (en/zh): "Let an agent install the prerequisites" — a table of what is automatable and what
+  is not, plus the agent loop (run doctor → hand `kind: "user"` steps to the human → re-run).
+
+### Notes
+
+- The WebBridge local service has **no public installer URL** (verified: guessed `cdn.kimi.com/…/setup_*`
+  paths answer 403). It can only be installed with the command the browser extension shows in
+  Settings → local agent remote control → Connect. The docs say so instead of pretending a script can
+  do it.
+- The plugin still never downloads or executes an installer on its own.
+
 ## [1.1.1] — 2026-10-23
 
 `fill {submit: true}` now actually submits, and the reason Enter never worked is documented.

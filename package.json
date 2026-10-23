@@ -42,7 +42,8 @@
     "README.md",
     "README.zh.md",
     "CHANGELOG.md",
-    "LICENSE"
+    "LICENSE",
+    "scripts/doctor.mjs"
   ],
   "engines": {
     "node": ">=22",
@@ -67,6 +68,10 @@
     "test:live": "node test/live.mjs",
     "test:integration": "node test/integration.mjs",
     "bench": "node test/bench.mjs",
-    "market:build": "node scripts/build-market-index.mjs"
+    "market:build": "node scripts/build-market-index.mjs",
+    "doctor": "node scripts/doctor.mjs"
+  },
+  "bin": {
+    "kimi-assemble-doctor": "./scripts/doctor.mjs"
   }
 }

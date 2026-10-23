@@ -62,7 +62,39 @@ git clone https://github.com/KexinCC/dsh-kimi-assemble.git
 plugin_manager install_bundle  target=<absolute path to that clone>
 ```
 
-Either way, `cordis_inspect_query(Tool.listTools)` should then list 13 `kimi_*` tools.
+Either way, `cordis_inspect_query(Tool.listTools)` should then list 17 `kimi_*` tools.
+
+### Let an agent install the prerequisites
+
+A preflight script ships with the package. It prints what is missing and, with `--json`, a machine-readable
+list of next actions (`kind: "run"` = a command an agent may execute; `kind: "user"` = only a human can do it).
+
+```bash
+# no install needed — runs straight from the registry
+npx --yes -p dsh-kimi-assemble kimi-assemble-doctor
+npx --yes -p dsh-kimi-assemble kimi-assemble-doctor --json
+```
+
+Exit codes: `0` both bridges ready · `2` something needs a human · `3` only the desktop runtime is missing
+(and it can be installed).
+
+**What an agent can do on its own**
+
+| Piece | Automatable? | How |
+| --- | --- | --- |
+| KimiCU runtime (Windows desktop half) | **yes**, with explicit consent | `kimi-assemble-doctor --install-desktop` downloads `setup_windows.cmd` from `cdn.kimi.com`, runs it, then re-checks |
+| Starting the local WebBridge daemon | yes | `kimi-assemble-doctor --start`, or the plugin starts it on first use |
+| Kimi browser extension (Chrome/Edge) | **no** | it is a browser-store extension; only the user can add it |
+| WebBridge local service under `~/.kimi-webbridge` | **no** | there is **no public installer URL** (verified: every guessed `cdn.kimi.com/…/setup_*` path answers 403). The only source is the install command the extension shows in *Settings → local agent remote control → Connect* |
+
+So the loop for an agent is: run the doctor → if it says `kind: "user"`, hand those exact steps to the human
+(install the extension, click Connect, run the command the dialog shows) → re-run the doctor until exit `0`.
+
+**Safety**
+
+- The plugin never downloads or executes an installer by itself. `--install-desktop` is opt-in, prints
+  the URL it is about to fetch, and runs the script with the user watching.
+- Nothing here needs an API key, an account, or admin rights; KimiCU may show its own UAC prompt.
 
 **Coming from the old KimiCU MCP?** Disable that row. It exposes
 `mcp__kimicu__js` / `js_reset` / `js_add_node_module_dir`; this plugin covers all 16 KimiCU

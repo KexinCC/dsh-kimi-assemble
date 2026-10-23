@@ -57,7 +57,38 @@ git clone https://github.com/KexinCC/dsh-kimi-assemble.git
 plugin_manager install_bundle  target=<上面克隆出来的目录的绝对路径>
 ```
 
-三种方式装好后，`cordis_inspect_query(Tool.listTools)` 都应出现 13 个 `kimi_*` 工具。
+三种方式装好后，`cordis_inspect_query(Tool.listTools)` 都应出现 17 个 `kimi_*` 工具。
+
+### 让 AI 自己把前置组件装上
+
+包里带一个预检脚本。它会告诉你缺什么；加 `--json` 会输出**机器可读的待办清单**：
+`kind: "run"` = 代理可以直接执行的命令，`kind: "user"` = 只有人能做的事。
+
+```bash
+# 不用先装插件，直接从 registry 跑
+npx --yes -p dsh-kimi-assemble kimi-assemble-doctor
+npx --yes -p dsh-kimi-assemble kimi-assemble-doctor --json
+```
+
+退出码：`0` 两条桥都就绪 · `2` 有人工步骤 · `3` 只缺桌面运行时（且可自动安装）。
+
+**代理能自己做的部分**
+
+| 组件 | 能自动吗 | 怎么做 |
+| --- | --- | --- |
+| KimiCU 运行时（Windows 桌面半边） | **能**，但需要显式同意 | `kimi-assemble-doctor --install-desktop` 从 `cdn.kimi.com` 下载 `setup_windows.cmd`、执行，然后重新自检 |
+| 启动本地 WebBridge 服务 | 能 | `kimi-assemble-doctor --start`，或插件首次调用时自动拉起 |
+| Kimi 浏览器扩展（Chrome/Edge） | **不能** | 它是浏览器商店扩展，只能用户自己添加 |
+| `~/.kimi-webbridge` 下的本地服务 | **不能** | **没有公开安装地址**（实测：所有猜测的 `cdn.kimi.com/…/setup_*` 路径都返回 403）。唯一来源是扩展「设置 → 本地 Agent 远程控制 → 去连接」弹窗里给出的安装命令 |
+
+所以代理的循环是：跑 doctor → 看到 `kind: "user"` 就把那几条原样交给用户（装扩展、点去连接、
+执行弹窗里的命令）→ 再跑 doctor，直到退出码 `0`。
+
+**安全性**
+
+- 插件**绝不**自己下载并执行安装器。`--install-desktop` 需要显式开启，会先打印要下载的 URL，
+  并在用户看着的情况下执行。
+- 全程不需要 API key、不需要账号、不需要管理员权限（KimiCU 可能弹自己的 UAC）。
 
 **从旧的 KimiCU MCP 过来？** 建议把那一行停用。它暴露
 `mcp__kimicu__js` / `js_reset` / `js_add_node_module_dir`，而本插件已覆盖全部 16 个 KimiCU
@@ -269,7 +300,7 @@ KIMI_LANG=en node test/unit.mjs
 KIMI_LANG=zh node test/unit.mjs
 ```
 
-宿主内验收（2026-10-23）：13 个 `kimi_*` 工具可见；`kimi_cu_observe` 的截图以图片块回到对话；
+宿主内验收（2026-10-23）：17 个 `kimi_*` 工具可见；`kimi_cu_observe` 的截图以图片块回到对话；
 `kimi_browser_open/read/screenshot` 中文无损往返；6 步批量脚本 0.6 秒跑完；
 `kimi-cu` / `kimi-webbridge` 两个 runtime skill 已顶掉旧的 curl/js 版。
 

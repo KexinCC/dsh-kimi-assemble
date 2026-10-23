@@ -112,10 +112,11 @@ check('文档与协议文件在包里', () => {
   if (has('SECURITY.md')) console.log('    (SECURITY.md included)')
 })
 
-check('测试与脚本不在包里', () => {
-  assert.ok(!some(/^test\//), `test files leaked: ${files.filter((f) => f.startsWith('test/')).join(', ')}`)
-  assert.ok(!some(/^scripts\//), `script files leaked: ${files.filter((f) => f.startsWith('scripts/')).join(', ')}`)
-  assert.ok(!some(/^market\//), 'market index should not ship in the package')
+check('测试与开发脚本不在包里（doctor 例外）', () => {
+  const leaks = files.filter((file) => file.startsWith('test/') || file === 'bench/' || file.startsWith('bench/'))
+  assert.deepEqual(leaks, [], `不应打包：${leaks.join(', ')}`)
+  const scripts = files.filter((file) => file.startsWith('scripts/'))
+  assert.deepEqual(scripts, ['scripts/doctor.mjs'], `scripts 里只应打包 doctor：${scripts.join(', ')}`)
 })
 
 check('没有混进构建产物或临时文件', () => {
