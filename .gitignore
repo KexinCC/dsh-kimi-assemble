@@ -27,3 +27,8 @@ npm-debug.log*
 pnpm-debug.log*
 
 .git-commit-msg.txt
+
+# 临时脚本/提交信息（不要提交）
+.msg-*.txt
+.patch-*.mjs
+.fix-*.mjs
