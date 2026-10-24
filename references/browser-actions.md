@@ -65,20 +65,28 @@ Daemon address: `http://127.0.0.1:10086` (the default; the real address lives in
 | `screenshot` | `format`(png/jpeg), `quality`(0-100), `selector?`, `path?`, `full_page?` | returns a file path, not base64 |
 | `save_as_pdf` | `paper_format`(letter/a4/legal/a3/tabloid), `landscape`, `scale`(0.1–2), `print_background`, `path?` | renders the current page to PDF and returns the path |
 
-## Keyboard events are not real
+## Keyboard events: raw actions are not real, `act press` is
 
-Measured on daemon v2.0.26 / extension 2.0.24: `send_keys` and `key_type` do **not** produce DOM
-keydown events (a page listener with `capture: true` never fires; `key_type` only inserts text into
-the focused field). Consequences:
+Measured on daemon v2.0.26 / extension 2.0.24:
 
-- **Implicit form submission via Enter does not work.** "Pressing Enter in an input" is a browser
-  default action and needs a trusted key event. A suggestion dropdown swallowing Enter is only the
-  visible symptom — Enter does nothing at all here.
-- `kimi_browser_fill {submit: true}` therefore submits by clicking the form submit button
-  (falling back to `form.requestSubmit()`, then Esc + click, then Enter) and reports which route
-  worked as `submitStrategy`.
-- Shortcuts that depend on default actions (Ctrl+F find, Tab traversal inside widgets) are
-  unreliable for the same reason. Prefer clicking elements.
+- `send_keys` and `key_type` do **not** produce DOM keydown events (a capture-phase listener never
+  fires; `key_type` only inserts text into the focused field). So nothing that depends on a browser
+  default action happens — implicit form submission by Enter being the important case.
+- The daemon's `cdp` passthrough **can** produce real, trusted key events via
+  `Input.dispatchKeyEvent` (rawKeyDown → char → keyUp). Measured: Enter submitted a real form.
+- It only works after `Page.bringToFront`. Without it the key event is dropped, because input goes
+  to the active target. The extension implements that as focus emulation — it does not steal the
+  user's foreground window.
+
+This plugin therefore sends single keys through CDP:
+
+| Situation | What happens |
+| --- | --- |
+| `kimi_browser_act {verb:"press", keys:"Enter", selector:"#q"}` | focuses the selector, bringToFront, then a real key event |
+| `kimi_browser_act {verb:"press", keys:"Mod+A"}` | chords are not synthesised; it falls back to `send_keys` and reports `realKey:false` |
+| `kimi_browser_fill {submit:true}` | clicks the submit button, then `requestSubmit()`, then a **real** Enter, then a plain Enter |
+
+Supported single keys: Enter, Tab, Escape, Backspace, Delete, Space, arrows, Home, End, PageUp, PageDown.
 
 ## Known limits
 

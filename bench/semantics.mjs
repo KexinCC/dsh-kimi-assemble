@@ -223,6 +223,42 @@ await check('fill(submit) 在普通表单上直接点按钮提交（回车不产
   await call('kimi_browser_tabs', { action: 'close_session' })
 })
 
+await check('act press 用 CDP 发真实回车，能触发表单隐式提交', async () => {
+  server.resetHits()
+  const s = arm.session('press-real')
+  const call = arm.chain(s)
+  await call('kimi_browser_open', { url: `${server.url}/form-plain.html` })
+  await call('kimi_browser_fill', { selector: '#q4', value: 'key-event' })
+  const pressed = await call('kimi_browser_act', { verb: 'press', keys: 'Enter', selector: '#q4' })
+  assert.equal(pressed.realKey, true, '单键应当走 CDP 真事件')
+  await new Promise((r) => setTimeout(r, 400))
+  assert.ok(server.hits.includes('/form-plain-done.html'), '真实回车应当触发表单提交')
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
+await check('act press 对组合键回落 send_keys（不谎报真事件）', async () => {
+  const s = arm.session('press-chord')
+  const call = arm.chain(s)
+  await call('kimi_browser_open', { url: `${server.url}/form-plain.html` })
+  await call('kimi_browser_fill', { selector: '#q4', value: 'abc' })
+  const pressed = await call('kimi_browser_act', { verb: 'press', keys: 'Mod+A' })
+  assert.equal(pressed.realKey, false, '组合键不走 CDP 真事件')
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
+await check('fill(submit) 在没有提交按钮的表单上也能提交（cdp-enter 或 requestSubmit）', async () => {
+  server.resetHits()
+  const s = arm.session('submit-cdp')
+  const call = arm.chain(s)
+  await call('kimi_browser_open', { url: `${server.url}/form-suggest.html` })
+  const result = await call('kimi_browser_fill', { selector: '#q2', value: 'k', submit: true })
+  assert.equal(result.changed, true)
+  assert.ok(['click-submit', 'cdp-enter', 'request-submit', 'escape+click'].includes(result.submitStrategy), `实际策略：${result.submitStrategy}`)
+  await new Promise((r) => setTimeout(r, 300))
+  assert.ok(server.hits.includes('/form-suggest-done.html'))
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
 await server.close()
 console.log(`\n语义检查：${passed} 项通过，${failures.length} 项失败`)
 if (failures.length) {
