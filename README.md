@@ -71,8 +71,14 @@ list of next actions (`kind: "run"` = a command an agent may execute; `kind: "us
 
 ```bash
 # no install needed — runs straight from the registry
-npx --yes -p dsh-kimi-assemble kimi-assemble-doctor
-npx --yes -p dsh-kimi-assemble kimi-assemble-doctor --json
+# after the plugin is installed in your DSH profile, run it from there:
+node "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-kimi-assemble\scripts\doctor.mjs"
+
+# or install the package once and use the bin:
+npm i -g dsh-kimi-assemble && kimi-assemble-doctor
+
+# same command with machine-readable output
+kimi-assemble-doctor --json
 ```
 
 Exit codes: `0` both bridges ready · `2` something needs a human · `3` only the desktop runtime is missing

@@ -66,8 +66,14 @@ plugin_manager install_bundle  target=<上面克隆出来的目录的绝对路�
 
 ```bash
 # 不用先装插件，直接从 registry 跑
-npx --yes -p dsh-kimi-assemble kimi-assemble-doctor
-npx --yes -p dsh-kimi-assemble kimi-assemble-doctor --json
+# 插件装进 DSH 后，直接从 profile 里跑：
+node "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-kimi-assemble\scripts\doctor.mjs"
+
+# 或者装一次包，用它的 bin：
+npm i -g dsh-kimi-assemble && kimi-assemble-doctor
+
+# 机器可读输出（给代理用）
+kimi-assemble-doctor --json
 ```
 
 退出码：`0` 两条桥都就绪 · `2` 有人工步骤 · `3` 只缺桌面运行时（且可自动安装）。
