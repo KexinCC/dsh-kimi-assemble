@@ -8,6 +8,24 @@ Daemon address: `http://127.0.0.1:10086` (the default; the real address lives in
 > Windows (measured: the body arrives BOM-mangled and the daemon answers `invalid JSON`).
 > `kimi_browser_script` sends UTF-8 from inside the Node process, so it does not have that problem.
 
+## Result status
+
+Every action that can change something returns `status`, and `verifyTier` says how hard it tried:
+
+| status | meaning | what to do |
+|---|---|---|
+| `verified` | the page really changed | carry on |
+| `unchanged` | dispatched, but nothing changed | not necessarily an error — re-read before retrying |
+| `dispatched` | sent, effect not confirmable from here (all `kimi_cu_*` actions, and browser actions under `light`) | observe/read again if it matters |
+| `blocked` | a native dialog or window problem stopped it before it ran | handle the dialog / re-resolve the window, then retry |
+
+Tiers: `strict` (irreversible or risky targets — submit/delete/pay, or `submit: true`; full window + stale retry),
+`normal` (an ordinary click or fill), `light` (scroll, hover, checkboxes, back/forward, reload, cdp — no change window),
+`off`. Override per call with `verify: false | true | "light" | "strict"`.
+
+Measured on the same page: `scroll` went from 649 ms to **13 ms** per call after tiering, because a reversible
+action no longer waits 600 ms to discover it changed nothing.
+
 ## Sessions and tab groups
 
 - Use one `session` per task (the tools derive `dsh-<id>` from the agent by default). Tabs opened in

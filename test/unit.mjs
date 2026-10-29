@@ -643,6 +643,46 @@ await testAsync('错误体自带下一步：桌面缺失给的是可自动执行
   assert.ok(install, '应给出 --install-desktop 的 run 命令')
 })
 
+
+// ---------------------------------------------------------------------------
+// 1.3.0：校验分级 + 统一状态语义
+// ---------------------------------------------------------------------------
+await testAsync('校验分级：可逆动作走 light（不再白等观察窗口）', async () => {
+  const { classifyVerify, TIERS } = await import('../lib/verify.mjs')
+  for (const action of ['scroll', 'hover', 'set_checked', 'select_option', 'go_back', 'reload', 'cdp']) {
+    const plan = classifyVerify(action, { dy: 40 }, { browserVerifyMs: 600 })
+    assert.equal(plan.tier, TIERS.LIGHT, action + ' 应为 light')
+    assert.equal(plan.budgetMs, 0, action + ' 不应等观察窗口')
+  }
+})
+
+await testAsync('校验分级：普通点击走 normal，风险目标升级 strict', async () => {
+  const { classifyVerify, TIERS } = await import('../lib/verify.mjs')
+  const normal = classifyVerify('click', { selector: '#row-3' }, { browserVerifyMs: 600 })
+  assert.equal(normal.tier, TIERS.NORMAL)
+  assert.equal(normal.budgetMs, 600)
+  const risky = classifyVerify('click', { selector: 'button.submit-order' }, { browserVerifyMs: 600 })
+  assert.equal(risky.tier, TIERS.STRICT, '含 submit 的选择器应升级 strict')
+  const zhRisky = classifyVerify('click', { selector: '#删除按钮' }, { browserVerifyMs: 600 })
+  assert.equal(zhRisky.tier, TIERS.STRICT, '中文风险词同样要识别')
+})
+
+await testAsync('校验分级：显式覆盖优先于启发式', async () => {
+  const { classifyVerify, TIERS } = await import('../lib/verify.mjs')
+  assert.equal(classifyVerify('scroll', { verify: 'strict' }, { browserVerifyMs: 600 }).tier, TIERS.STRICT)
+  assert.equal(classifyVerify('click', { selector: '#submit', verify: false }, { browserVerifyMs: 600 }).tier, TIERS.OFF)
+  assert.equal(classifyVerify('click', { selector: '#x' }, { browserVerify: 'off' }).tier, TIERS.OFF)
+})
+
+await testAsync('状态语义：verified / unchanged / dispatched / blocked 分得清', async () => {
+  const { statusFor, STATUS } = await import('../lib/verify.mjs')
+  assert.equal(statusFor({ checked: true, changed: true }), STATUS.VERIFIED)
+  assert.equal(statusFor({ checked: true, changed: false }), STATUS.UNCHANGED)
+  assert.equal(statusFor({ dispatched: true }), STATUS.DISPATCHED)
+  assert.equal(statusFor({ dialogBlocked: 'confirm Delete?' }), STATUS.BLOCKED)
+  assert.equal(statusFor({ checked: false, changed: null }), STATUS.DISPATCHED)
+})
+
 await new Promise((resolve) => setTimeout(resolve, 0))
 for (const { name, error } of failures) {
   console.error(`✗ ${name}\n  ${error?.message ?? error}`)

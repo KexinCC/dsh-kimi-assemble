@@ -154,6 +154,7 @@ kimi-assemble-doctor --json
 | `browserGroupTitle` | `DSH` | 标签组默认标题（用户浏览器里可见） |
 | `browserReadMaxChars` | `20000` | `kimi_browser_read` 默认预算 |
 | `browserVerify` | `auto` | `auto` = 校验动作是否真的改变了页面；`off` = 退回「派发即成功」（回滚开关） |
+| `browserVerifyLightMs` | `0` | 可逆动作（滚动/悬停/勾选…）的观察预算。这类动作不再白等 600ms：实测 649ms → 13ms |
 | `browserVerifyMs` | `600` | 等待变化的观察窗口，超时才判「没生效」（100–10000） |
 | `diagnostics` | `false` | 每次工具调用往 `~/.dsh/kimi-assemble/diag.log` 追加一行 JSONL（工具名/耗时/成功与否/错误码，**不记参数**） |
 | `diagnosticsMaxKb` | `512` | `diag.log` 轮转阈值（保留一个 `.1`） |

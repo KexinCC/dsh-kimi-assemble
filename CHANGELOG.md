@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-10-30
+
+Two things, both about not lying to the model: how hard an action is verified, and what the
+result actually means.
+
+### Changed — verification is tiered by reversibility
+
+- `scroll`, `hover`, `mouse_click`, `set_checked`, `select_option`, `key_type`, `send_keys`,
+  `upload`, `go_back`/`go_forward`/`reload`, `cdp` no longer wait for a change window. They are
+  reversible, so waiting 600 ms to learn "nothing changed" was pure cost: **measured 649 ms →
+  13 ms per scroll call** on the same page.
+- Clicks that hit a risky target (`submit`, `delete`, `send`, `pay`, `save`, `确认`, `删除`,
+  `支付` …) or `fill {submit:true}` are upgraded to `strict`: full window plus stale-ref retry.
+  Ordinary clicks and fills stay `normal`. Per call you can override with
+  `verify: false | true | "light" | "strict"`.
+- New `browserVerifyLightMs` (default `0`) tunes the light budget.
+
+### Changed — one vocabulary for results
+
+- Actions now return `status` — `verified` / `unchanged` / `dispatched` / `blocked` — alongside
+  `verifyTier`. Before, the browser said `changed: true|false` while every `kimi_cu_*` action said
+  `dispatched: true` (KimiCU cannot confirm effects), so "sent" looked like "done".
+  `kimi_cu_*` results are explicitly `dispatched`; `fill` without submit is `dispatched` too
+  (the value landed, the page did not change); a native dialog yields `blocked`.
+
+Suite: syntax 37 files, unit 59, assert 5, faults 12, i18n 11, market 9, pack 7, version 8,
+bench semantics 17.
+
 ## [1.2.0] — 2026-10-30
 
 First-use experience, model correctness, and the version bug. Four changes, all driven by
