@@ -129,6 +129,8 @@ want to change; everything else falls back to the defaults.
 | `browserReadMaxChars` | `20000` | default `kimi_browser_read` budget |
 | `browserVerify` | `auto` | `auto` = verify that each action changed the page; `off` = fire-and-forget (rollback switch) |
 | `browserVerifyMs` | `600` | how long to watch for a change before reporting "unchanged" (100–10000) |
+| `diagnostics` | `false` | append one JSONL line per tool call to `~/.dsh/kimi-assemble/diag.log` (name, ms, ok, error code — never arguments) |
+| `diagnosticsMaxKb` | `512` | rotate `diag.log` at this size (one `.1` kept) |
 | `browserReadIncludeMeta` | `true` | attach the page-state line (url / load / scroll / focus / counts) to reads |
 | `kimicuEnabled` | `true` | when false, no desktop tools are registered |
 | `kimicuExePath` | `''` | empty = `KIMI_CU_WINDOWS_EXE` → `KIMI_CU_WINDOWS_HOME` → `%LOCALAPPDATA%\Kimi Computer Use\kimi-cu.exe` → legacy `KimiCU` directory |

@@ -122,6 +122,8 @@ kimi-assemble-doctor --json
 | `browserReadMaxChars` | `20000` | `kimi_browser_read` 默认预算 |
 | `browserVerify` | `auto` | `auto` = 校验动作是否真的改变了页面；`off` = 退回「派发即成功」（回滚开关） |
 | `browserVerifyMs` | `600` | 等待变化的观察窗口，超时才判「没生效」（100–10000） |
+| `diagnostics` | `false` | 每次工具调用往 `~/.dsh/kimi-assemble/diag.log` 追加一行 JSONL（工具名/耗时/成功与否/错误码，**不记参数**） |
+| `diagnosticsMaxKb` | `512` | `diag.log` 轮转阈值（保留一个 `.1`） |
 | `browserReadIncludeMeta` | `true` | 每次 read 附带页面状态行（url / 加载态 / 滚动 / 焦点 / 计数） |
 | `kimicuEnabled` | `true` | 关掉就不注册桌面工具 |
 | `kimicuExePath` | `''` | 空 = `KIMI_CU_WINDOWS_EXE` → `KIMI_CU_WINDOWS_HOME` → `%LOCALAPPDATA%\Kimi Computer Use\kimi-cu.exe` → 旧 `KimiCU` 目录 |

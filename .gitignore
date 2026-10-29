@@ -32,3 +32,9 @@ pnpm-debug.log*
 .msg-*.txt
 .patch-*.mjs
 .fix-*.mjs
+
+# 别的工作落在本目录里的内容，不属于本仓库
+ai-video-research/
+dsh-image-gen/
+.chrome-profile/
+**/.chrome-profile/

@@ -70,6 +70,17 @@ These are not tool errors — they happen before the plugin runs.
 > the link and leaves the target untouched.
 > `.git`). Remove the bundle through `plugin_manager`, which unlinks it properly.
 
+## Where the logs are
+
+| Location | What it holds | Notes |
+|---|---|---|
+| `~/.kimi-webbridge/logs/daemon.log` | the Kimi daemon side: every command, websocket lifecycle, timeouts | DEBUG-level and noisy (7k+ telemetry lines in a week); look at the tail only |
+| `~/.dsh/kimi-assemble/diag.log` | this plugin: one JSONL line per tool call — name, session, ms, ok, error code, first line of the error | **opt-in**: set `diagnostics: true`. Never records argument values or page content |
+| `~/.dsh/sessions/**/session.v4.jsonl.zstd` | the full DSH session: every tool result including `isError` | zstd, **multi-frame** — plain `zstd -d` only yields the header; decompress frame by frame |
+| KimiCU | nothing | no log file; ask `doctor` or `kimi_status {deep:true}` for the live state |
+
+Order of investigation: `kimi_status` → tail `diag.log` (if enabled) → tail `daemon.log` → reproduce with one `kimi_browser_script` step.
+
 ## Order of investigation
 
 1. `kimi_status` — a one-line verdict for both bridges plus the next step.

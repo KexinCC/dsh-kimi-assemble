@@ -23,6 +23,7 @@ import { installSkillRegistrations } from './lib/skills.mjs'
 import { registerTools } from './lib/tools/index.mjs'
 import { resetAddrCache } from './lib/webbridge.mjs'
 import { resetState as resetCuState } from './lib/kimicu.mjs'
+import { configureDiag } from './lib/diag.mjs'
 
 export const name = 'kimi-assemble'
 
@@ -39,6 +40,8 @@ export function apply(ctx, rawConfig) {
   const config = resolveConfig(rawConfig)
   // 语言必须先定：后面所有注册（工具渲染、提示段、skill 正文）都会用到
   const language = configureI18n(config)
+  // 诊断日志：默认关，开了才写盘（不记参数内容，只记结果与错误码）
+  const diag = configureDiag({ enabled: config.diagnostics, maxBytes: config.diagnosticsMaxKb * 1024 })
   const log = (message) => {
     try {
       ctx.logger?.info?.(`kimi-assemble: ${message}`)

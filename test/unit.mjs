@@ -14,6 +14,9 @@ import { spawn } from 'node:child_process'
 
 import { encodeFrame, FrameReader, defaultPipePath, CU_METHODS, CU_METHOD_ARGS } from '../lib/kimicu.mjs'
 import { resolveConfig, DEFAULTS } from '../lib/config.mjs'
+import { nearestAction } from '../lib/tools/browser.mjs'
+import { isWindowInvalidError } from '../lib/kimicu.mjs'
+import { configureDiag, diagPath, recordDiag, readDiagTail } from '../lib/diag.mjs'
 import { defineTool, objectSchema, stringField, intField, truncate } from '../lib/tool.mjs'
 import { normalizeSelector, sessionNameFor, BROWSER_ACTIONS } from '../lib/tools/browser.mjs'
 import { CU_ACTIONS } from '../lib/tools/computer.mjs'
@@ -554,6 +557,61 @@ await testAsync('状态：sessionState 按 session 隔离且可重置', async ()
 // ---------------------------------------------------------------------------
 // 汇总
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// 1.1.4：新加的自愈/提示/诊断
+// ---------------------------------------------------------------------------
+await testAsync('动作名纠错：拼错一个字母能给出最近匹配', async () => {
+  assert.equal(nearestAction('navigat', BROWSER_ACTIONS), 'navigate')
+  assert.equal(nearestAction('snapsho', BROWSER_ACTIONS), 'snapshot')
+  assert.equal(nearestAction('screenshot', BROWSER_ACTIONS), 'screenshot')
+})
+
+await testAsync('动作名纠错：完全不像的名字不乱猜', async () => {
+  assert.equal(nearestAction('zzzzzzzz', BROWSER_ACTIONS), '')
+  assert.equal(nearestAction('', BROWSER_ACTIONS), '')
+})
+
+await testAsync('窗口失效识别：运行时那一句要能认出来，其它错误不能误判', async () => {
+  assert.equal(isWindowInvalidError(new Error('KimiCU window is no longer valid: 12345')), true)
+  assert.equal(isWindowInvalidError(new Error('window no longer exists')), true)
+  assert.equal(isWindowInvalidError(new Error('click: no such element')), false)
+  assert.equal(isWindowInvalidError(null), false)
+})
+
+await testAsync('诊断日志：默认不写盘', async () => {
+  const dir = mkdtempSync(join(tmpdir(), "kimi-diag-"))
+  try {
+    const env = { USERPROFILE: dir, HOME: dir }
+    configureDiag({ enabled: resolveConfig({}).diagnostics, env })
+    assert.equal(resolveConfig({}).diagnostics, false, '默认必须关')
+    recordDiag({ event: 'call', tool: 'x', ok: true })
+    assert.equal(existsSync(diagPath(env)), false, '关着就不该有文件')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+await testAsync('诊断日志：开启后写 JSONL，且不记参数值', async () => {
+  const dir = mkdtempSync(join(tmpdir(), "kimi-diag-"))
+  const env = { USERPROFILE: dir, HOME: dir }
+  try {
+    configureDiag({ enabled: true, maxBytes: 4096, env })
+    recordDiag({ event: 'call', tool: 'kimi_browser_click', session: 's1', ok: false, ms: 12, code: 'KIMI_WEBRIDGE_TOOL', detail: 'click: no such element' })
+    const tail = readDiagTail(5)
+    assert.equal(tail.length, 1)
+    const row = JSON.parse(tail[0])
+    assert.equal(row.tool, 'kimi_browser_click')
+    assert.equal(row.ok, false)
+    assert.equal(row.code, 'KIMI_WEBRIDGE_TOOL')
+    assert.equal(row.ms, 12)
+    assert.ok(!('args' in row) && !('params' in row), '不能记录参数内容')
+  } finally {
+    configureDiag({ enabled: false, env })
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 await new Promise((resolve) => setTimeout(resolve, 0))
 for (const { name, error } of failures) {
   console.error(`✗ ${name}\n  ${error?.message ?? error}`)

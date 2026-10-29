@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.4] — 2026-10-29
+
+Reliability tail: the failures that actually showed up in 10,909 logged tool calls are now either
+self-healed or explained. Adds an opt-in diagnostic log so the next failure has a crime scene.
+
+### Added
+
+- `diagnostics: true` (default off) appends one JSONL line per tool call to
+  `~/.dsh/kimi-assemble/diag.log`: tool, session, duration, ok, error code, first line of the error.
+  Argument values and page content are never written. `diagnosticsMaxKb` (512) rotates it.
+
+### Fixed
+
+- **KimiCU window handle invalid** (`window is no longer valid`) was the most common desktop failure
+  (7 of 51 logged failures). A call that hits it now re-resolves the window from the original id/title
+  and retries once — safe, because that error means the action never landed. If the window is really
+  gone, the original error is returned unchanged.
+- `snapshot` failing because **another browser extension injected its own panel** into the page
+  (password managers, translators, recorders) now says so and tells you what to do: close that panel,
+  or read the data with `kimi_browser_eval`.
+- A misspelled `action` inside a script now gets a "did you mean …?" suggestion.
+- Legacy `scroll_x` / `scroll_y` arguments are accepted as `dx` / `dy` instead of failing validation.
+
+### Docs
+
+- `references/troubleshooting.md`: where every log lives (daemon, plugin, DSH sessions) and the order
+  to read them.
+- `SECURITY.md`: this plugin makes no network requests; discloses what the Kimi components it drives
+  report (`gator.volces.com`, tool-name level only).
+
+## [1.1.3] — 2026-10-24
+
+Documentation only; the doctor invocation in the README did not work on Windows.
+
+### Fixed
+
+- `npx -p dsh-kimi-assemble kimi-assemble-doctor` fails with "not recognized" when a package's bin name
+  differs from its package name (tested three npx variants). Replaced with three verified forms: run the
+  installed copy by path, `npm i -g dsh-kimi-assemble && kimi-assemble-doctor`, or the same with
+  `--json` for agents.
+
 ## [1.1.2] — 2026-10-24
 
 Prerequisite setup can now be driven by an agent, with the human-only parts called out explicitly.

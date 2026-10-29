@@ -1,5 +1,26 @@
 # Security Policy
 
+## What this plugin sends, and what it does not
+
+- **This plugin makes no network requests at all.** It speaks to `127.0.0.1:<daemon port>` and to a
+  named pipe; that is the whole transport.
+- **It writes no files by default.** The one exception is `diagnostics: true`, which appends one JSONL
+  line per tool call to `~/.dsh/kimi-assemble/diag.log` (tool name, session id, duration, ok/error
+  code, first line of the error message). Argument values and page content are never written.
+
+### The Kimi components it drives do phone home
+
+Measured from the daemon's own log (daemon v2.0.26): it uploads usage events to
+`https://gator.volces.com` (Volcengine analytics). In one week we counted 7,124
+`webbridge_command_call` events with `params: {session, tool}` — i.e. **which action ran and the
+session name**, not URLs, not page content, not tool arguments — plus 153
+`webbridge_daemon_alive` events carrying architecture, daemon version and OS. A stable
+`user_unique_id` identifies the install.
+
+That behaviour belongs to the Kimi daemon, not to this plugin; it is documented here so nobody is
+surprised by it. If it matters for your environment, restrict that host at the network level — the
+plugin keeps working, since it never leaves the loopback interface.
+
 ## What this plugin can do
 
 `dsh-kimi-assemble` is an automation bridge. Once installed and enabled it lets a

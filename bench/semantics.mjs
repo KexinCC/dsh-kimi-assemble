@@ -59,7 +59,14 @@ await check('wait(text) 不会把 <script> 里的字面量当成页面文本', a
   const result = await call('kimi_browser_wait', { text: 'LATE_OK', timeout_ms: 4000 })
   const elapsed = Date.now() - t0
   assert.equal(result.ok, true, '应当等到真实渲染（1.2s 后）')
-  assert.ok(elapsed >= 1100, `不能在脚本字面量上提前命中，实际 ${elapsed}ms`)
+  // 关键：不能在「内联 <script> 里的字面量」上瞬时命中。
+  // 阈值不能用 1100ms —— 页面加载本身就占了 300ms 左右，渲染发生但等待只花了 899ms 是正常的；
+  // 真正的假阳性是「几毫秒就命中」，所以门槛放到 400ms，并额外确认文本在页面里真的可见。
+  assert.ok(elapsed >= 400, `不能在脚本字面量上提前命中，实际 ${elapsed}ms`)
+  const visible = await call('kimi_browser_eval', {
+    code: '(() => document.body.innerText.includes("LATE_OK"))()',
+  })
+  assert.match(String(visible.json), /true/, '命中时文本必须在可见文本里')
   await call('kimi_browser_tabs', { action: 'close_session' })
 })
 
