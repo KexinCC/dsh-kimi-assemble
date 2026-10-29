@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-10-30
+
+First-use experience, model correctness, and the version bug. Four changes, all driven by
+things that were actually wrong rather than things that could be nicer.
+
+### Fixed
+
+- **`VERSION` had been stuck at 1.0.0 for five releases**, so every load log lied about which
+  build was running. It now derives from `package.json` — one source of truth — and
+  `test/version.mjs` asserts the invariant so it cannot drift again. Same test also asserts the
+  market index version, that the READMEs contain no hard-coded install pin (they had `@1.1.0`),
+  that the READMEs stated tool count matches the real one, and that `files`/`bin` point at files
+  that exist.
+
+### Added
+
+- **Script-engine actions `assert` and `commit`** for batch scripts. `assert` checks a
+  precondition (url contains / selector exists or is visible / text present, with `not` to
+  invert) and **aborts the whole batch** when it fails, naming the step — no more silently
+  continuing after a step that did not take effect. `commit` marks an irreversible boundary;
+  failures after it say so, so a retry does not blindly resubmit. Covered by `test/assert.mjs`
+  with a fake daemon (offline, deterministic).
+- **Every failure now carries its next step.** `KIMI_WEBRIDGE_DOWN` / `_EXTENSION` /
+  `_VERSION` / `_PORT_BUSY` and the four `KIMI_CU_*` codes append a block with a runnable
+  `doctor` command plus a one-line JSON `next_actions` array (`kind:"run"` vs `kind:"user"`),
+  so an agent does not need an extra tool round to learn what to do. Unrelated errors stay
+  quiet — no noise added.
+
+### Changed
+
+- **README install section rebuilt around the preflight.** Pick a path (browser-only /
+  desktop-only / both, with tool counts), run `doctor` as the spine, install, verify — and the
+  security boundary (page content is untrusted data; `eval` is privileged) is stated up front
+  instead of buried in SECURITY.md.
+- **Tool-selection table and recipes moved into the skill body** (on demand) instead of
+  staying in tool descriptions. The always-on cost of the 17 tool definitions is ~5.4k tokens;
+  the rules are unchanged, they just stop costing context on every turn.
+
 ## [1.1.5] — 2026-10-29
 
 Publishes a reproducible benchmark. Docs and bench only; no runtime change.

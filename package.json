@@ -1,6 +1,6 @@
 {
   "name": "dsh-kimi-assemble",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "Native DeepSeek Harness tools for the Kimi browser extension (WebBridge) and KimiCU desktop control: kimi_browser_* drives the user's real logged-in browser, kimi_cu_* observes and operates Windows desktops.",
   "keywords": [
     "dsh",
@@ -59,7 +59,7 @@
   },
   "scripts": {
     "check": "node scripts/check-syntax.mjs",
-    "test": "node scripts/check-syntax.mjs && node test/unit.mjs && node test/faults.mjs && node test/i18n.mjs && node test/market.mjs && node test/pack.mjs",
+    "test": "node scripts/check-syntax.mjs && node test/version.mjs && node test/unit.mjs && node test/assert.mjs && node test/faults.mjs && node test/i18n.mjs && node test/market.mjs && node test/pack.mjs",
     "test:unit": "node test/unit.mjs",
     "test:faults": "node test/faults.mjs",
     "test:i18n": "node test/i18n.mjs",
@@ -69,7 +69,9 @@
     "test:integration": "node test/integration.mjs",
     "bench": "node test/bench.mjs",
     "market:build": "node scripts/build-market-index.mjs",
-    "doctor": "node scripts/doctor.mjs"
+    "doctor": "node scripts/doctor.mjs",
+    "test:version": "node test/version.mjs",
+    "test:assert": "node test/assert.mjs"
   },
   "bin": {
     "kimi-assemble-doctor": "./scripts/doctor.mjs"

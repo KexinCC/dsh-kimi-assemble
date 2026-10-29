@@ -43,6 +43,9 @@ jobs:
         env:
           KIMI_LANG: zh
 
+      - name: Script assert/commit semantics
+        run: node test/assert.mjs
+
       - name: Fault injection
         run: node test/faults.mjs
 
@@ -51,6 +54,11 @@ jobs:
 
       - name: Plugin-market index
         run: node test/market.mjs
+
+      # 版本/数字漂移守门：index.js VERSION、README 安装 pin、工具数、CHANGELOG 条目
+      # 这类错误没有行为表现（曾经 VERSION 停在 1.0.0 长达 5 个版本），只能靠恒等式测试盯着
+      - name: Version and doc consistency
+        run: node test/version.mjs
 
   pack:
     name: Pack contents

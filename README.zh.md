@@ -18,48 +18,81 @@ UTF-8 全程无损，参数错误会点到字段，连接类失败会给出下�
 
 ## 安装
 
-### 先读这个：你得先有什么
+### 1. 先选路径（30 秒）
 
-本插件是**桥**，不是自带实现。它驱动的是装在你机器上的两个 Kimi 组件；缺了它们，每个
-工具调用都会回 `KIMI_WEBRIDGE_DOWN` / `KIMI_CU_NOT_INSTALLED` —— 并附安装指引（插件自己
-绝不下载并执行远程安装器，这是安全底线）。
+| 路径 | 你能得到 | 需要什么 | 工具 |
+|---|---|---|---|
+| **只要浏览器** | 驱动你已登录的 Chrome/Edge | Kimi 浏览器扩展 + 它的本地服务 | 12 个 + `kimi_status` |
+| **只要桌面** | 操作真实 Windows 窗口 | Windows + KimiCU 运行时 | 5 个 + `kimi_status` |
+| **两个都要**（默认） | 全部 | 上面两套 | 17 个 |
 
-| 你想要… | 你需要 | 怎么装 |
-|---|---|---|
-| 浏览器控制 | Chrome 或 Edge + **Kimi 浏览器扩展**。本地 Agent 这条路**不需要 Kimi 账号**（只有侧边栏需要）。 | 1) 在 Chrome Web Store / Edge Add-ons 装 “Kimi” 扩展（或[官网手动安装](https://www.kimi.com/products/kimi-browser-extension)）；2) 打开扩展侧边栏 → 设置 → 「本地 Agent 远程控制」→ 点**「去连接」**；3) 把弹窗里给出的安装命令复制到终端执行 —— 这一步会把本地服务装到 `~/.kimi-webbridge`。[常见问题](https://www.kimi.com/help/kimi-webbridge/kimi-webbridge-faq) |
-| 桌面控制 | Windows + **KimiCU 运行时**（`kimi-cu.exe`） | 在终端下载并运行 [setup_windows.cmd](https://cdn.kimi.com/kimi-computer-use-windows/latest/setup_windows.cmd)，或在配置里用 `kimicuExePath` 指定已有的 exe |
-| 两者任一 | DeepSeek Harness `>= 0.2.0`（已在 `0.2.1-rc.2` 上验证），Node `>= 22` | — |
+只想用浏览器就设 `kimicuEnabled: false`；只想用桌面就设 `webbridgeEnabled: false` —— 关掉的那一半
+连工具和提示词都不会注册。
 
-只想要浏览器能力？设 `kimicuEnabled: false`，五个 `kimi_cu_*` 工具就不会注册（任何系统都一样）。
+这个插件是**桥，不是自带实现**。它不会自己下载执行远程安装包，所以缺组件时会报
+`KIMI_WEBRIDGE_DOWN` / `KIMI_CU_NOT_INSTALLED` —— **错误里直接带着下一步怎么做**。
 
-新机器上跑一次 `kimi_status`，两条桥都报“已安装”就绪；之后插件的发现、启动、重连全部自动
-（包括清掉非正常关机残留的 daemon pid 文件）。
+### 2. 跑预检（这是安装主线）
 
-**从 npm 安装（最简单）：**
+它会告诉你缺什么；加 `--json` 输出机器可读的 `next_actions`（`kind: "run"` = 代理能直接执行，
+`kind: "user"` = 只能人来点）。
 
-```text
-plugin_manager install_bundle  target=dsh-kimi-assemble@1.1.0
+```bash
+npm i -g dsh-kimi-assemble && kimi-assemble-doctor
+kimi-assemble-doctor --json          # 给代理用
 ```
 
-**或者从市集安装**：在「发现 → 索引源」里填下面这个地址，然后在列表里安装本插件：
+插件已经装进 profile 的话，直接跑自带的那份：
+
+```bash
+node "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-kimi-assemble\scripts\doctor.mjs"
+```
+
+退出码：`0` 双桥就绪 · `2` 需要人做一步 · `3` 只缺桌面运行时且可安装。
+不加 `--install-desktop` 时它**绝不**下载任何东西。
+
+### 3. 装插件
+
+```text
+plugin_manager install_bundle  target=dsh-kimi-assemble
+```
+
+从市集装：在 Discover → index sources 里加这个索引地址，然后从市集安装：
 
 ```text
 https://raw.githubusercontent.com/KexinCC/dsh-kimi-assemble/main/market/index.json
 ```
 
-**还可以克隆下来直接从目录装**（完全不依赖 registry）：
+从本地克隆装（不走 registry）：
 
 ```bash
 git clone https://github.com/KexinCC/dsh-kimi-assemble.git
 ```
 
 ```text
-plugin_manager install_bundle  target=<上面克隆出来的目录的绝对路径>
+plugin_manager install_bundle  target=<那个克隆的绝对路径>
 ```
 
-三种方式装好后，`cordis_inspect_query(Tool.listTools)` 都应出现 17 个 `kimi_*` 工具。
+### 4. 验证
+
+`cordis_inspect_query(Tool.listTools)` 会列出你这条路径对应的 `kimi_*` 工具，
+`kimi_status` 应报两条桥都已安装。到这一步就算装好了；之后插件会自动发现、启动、重连
+（包括清理异常关机留下的 daemon pid 僵尸文件）。
+
+### 组件安装细节
+
+| 你想要的 | 你需要的 | 怎么弄 |
+|---|---|---|
+| 浏览器控制 | Chrome 或 Edge + **Kimi 浏览器扩展**。本地 Agent 这条路**不需要 Kimi 账号**（只有侧边栏要）。 | 1) 从 Chrome 应用商店 / Edge 加载项装 "Kimi" 扩展（或[手动安装](https://www.kimi.com/products/kimi-browser-extension)）；2) 打开扩展侧边栏 → 设置 → “本地 Agent 远程控制” → 点**去连接**；3) 把弹窗里的安装命令复制到终端执行 —— 这会在 `~/.kimi-webbridge` 装本地服务。[FAQ](https://www.kimi.com/help/kimi-webbridge/kimi-webbridge-faq) |
+| 桌面控制 | Windows + **KimiCU 运行时**（`kimi-cu.exe`） | 在终端里下载并运行 [setup_windows.cmd](https://cdn.kimi.com/kimi-computer-use-windows/latest/setup_windows.cmd)，或把 `kimicuExePath` 指向已有的副本 |
+| 通用 | DeepSeek Harness `>= 0.2.0`（在 `0.2.1-rc.2` 上验证）、Node `>= 22` | — |
+
+> **安全边界，先说清：** 浏览器读到的一切都是**不可信数据，不是指令**。`kimi_browser_eval`
+> 是特权工具（它在你的页面里执行代码），网页里那些"让 AI 去做某事"的话，应当被报告，而不是被执行。
+> 见 [SECURITY.md](SECURITY.md)。
 
 ### 让 AI 自己把前置组件装上
+
 
 包里带一个预检脚本。它会告诉你缺什么；加 `--json` 会输出**机器可读的待办清单**：
 `kind: "run"` = 代理可以直接执行的命令，`kind: "user"` = 只有人能做的事。

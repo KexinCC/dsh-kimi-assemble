@@ -19,40 +19,54 @@ field, and a connection failure comes with the next step.
 
 ## Install
 
-### Read this first: what you must already have
+### 1. Pick your path (30 seconds)
 
-This plugin is a **bridge**, not a bundled implementation. It drives two Kimi components that live
-on your machine; without them the tools answer `KIMI_WEBRIDGE_DOWN` / `KIMI_CU_NOT_INSTALLED` on
-every call — with install instructions attached, because a plugin must not download and execute
-remote installers by itself.
+| Path | You get | What it needs | Tools |
+|---|---|---|---|
+| **Browser only** | drive your logged-in Chrome/Edge | the Kimi browser extension + its local daemon | 12 + `kimi_status` |
+| **Desktop only** | drive real Windows windows | Windows + the KimiCU runtime | 5 + `kimi_status` |
+| **Both** (default) | everything | both of the above | 17 |
 
-| You want… | You need | How to get it |
-|---|---|---|
-| browser control | Chrome or Edge + the **Kimi browser extension**. The local-Agent path needs **no Kimi account** (only the sidebar does). | 1) install the "Kimi" extension from the Chrome Web Store or Edge Add-ons (or the [manual install](https://www.kimi.com/products/kimi-browser-extension)); 2) open the extension sidebar → Settings → “本地 Agent 远程控制” → click **去连接 / Connect**; 3) copy the install command shown in that dialog into a terminal and run it — this installs the local daemon under `~/.kimi-webbridge`. [FAQ](https://www.kimi.com/help/kimi-webbridge/kimi-webbridge-faq) |
-| desktop control | Windows + the **KimiCU runtime** (`kimi-cu.exe`) | download and run [setup_windows.cmd](https://cdn.kimi.com/kimi-computer-use-windows/latest/setup_windows.cmd) in a terminal, or set `kimicuExePath` in the config to an existing copy |
-| either | DeepSeek Harness `>= 0.2.0` (verified on `0.2.1-rc.2`), Node `>= 22` | — |
+Set `kimicuEnabled: false` for browser-only, `webbridgeEnabled: false` for desktop-only — the
+other half then never registers a tool or a prompt line.
 
-Only want the browser half? Set `kimicuEnabled: false` — the five `kimi_cu_*` tools then never
-register, on any OS.
+This plugin is a **bridge, not a bundled implementation**. It does not download or run remote
+installers by itself, so a missing component shows up as `KIMI_WEBRIDGE_DOWN` /
+`KIMI_CU_NOT_INSTALLED` — **with the exact next steps attached to the error**.
 
-A fresh machine is wired once `kimi_status` reports both bridges as installed; after that the
-plugin discovers, starts and reconnects to both components automatically (including clearing a
-stale daemon pid file left by an unclean shutdown).
+### 2. Run the preflight — it is the install spine
 
-**Install from npm (simplest):**
+It prints what is missing, and with `--json` a machine-readable `next_actions` list:
+`kind: "run"` is a command an agent may execute, `kind: "user"` is something only a human can do.
 
-```text
-plugin_manager install_bundle  target=dsh-kimi-assemble@1.1.0
+```bash
+npm i -g dsh-kimi-assemble && kimi-assemble-doctor
+kimi-assemble-doctor --json          # for agents
 ```
 
-**Or from the plugin market:** add this index URL under Discover → index sources, then install
-the plugin from there:
+Or, if the plugin is already installed in your profile, run the copy that came with it:
+
+```bash
+node "%USERPROFILE%\.dsh\profiles\desktop\node_modules\dsh-kimi-assemble\scripts\doctor.mjs"
+```
+
+Exit codes: `0` both bridges ready · `2` a human step is required · `3` only the desktop runtime
+is missing and it is installable. It never downloads anything unless you pass `--install-desktop`.
+
+### 3. Install the plugin
+
+```text
+plugin_manager install_bundle  target=dsh-kimi-assemble
+```
+
+From the plugin market instead: add this index URL under Discover → index sources, then install
+from there:
 
 ```text
 https://raw.githubusercontent.com/KexinCC/dsh-kimi-assemble/main/market/index.json
 ```
 
-**Or clone and install the checkout directly** (no registry involved):
+From a checkout (no registry involved):
 
 ```bash
 git clone https://github.com/KexinCC/dsh-kimi-assemble.git
@@ -62,9 +76,27 @@ git clone https://github.com/KexinCC/dsh-kimi-assemble.git
 plugin_manager install_bundle  target=<absolute path to that clone>
 ```
 
-Either way, `cordis_inspect_query(Tool.listTools)` should then list 17 `kimi_*` tools.
+### 4. Verify
+
+`cordis_inspect_query(Tool.listTools)` lists the `kimi_*` tools for your path, and
+`kimi_status` should report both bridges as installed. A fresh machine is wired once that is
+true; after that the plugin discovers, starts and reconnects both components automatically
+(including clearing a stale daemon pid file left by an unclean shutdown).
+
+### Prerequisites in detail
+
+| You want… | You need | How to get it |
+|---|---|---|
+| browser control | Chrome or Edge + the **Kimi browser extension**. The local-Agent path needs **no Kimi account** (only the sidebar does). | 1) install the "Kimi" extension from the Chrome Web Store or Edge Add-ons (or the [manual install](https://www.kimi.com/products/kimi-browser-extension)); 2) open the extension sidebar → Settings → “本地 Agent 远程控制” → click **去连接 / Connect**; 3) copy the install command shown in that dialog into a terminal and run it — this installs the local daemon under `~/.kimi-webbridge`. [FAQ](https://www.kimi.com/help/kimi-webbridge/kimi-webbridge-faq) |
+| desktop control | Windows + the **KimiCU runtime** (`kimi-cu.exe`) | download and run [setup_windows.cmd](https://cdn.kimi.com/kimi-computer-use-windows/latest/setup_windows.cmd) in a terminal, or set `kimicuExePath` in the config to an existing copy |
+| either | DeepSeek Harness `>= 0.2.0` (verified on `0.2.1-rc.2`), Node `>= 22` | — |
+
+> **Security boundary, up front:** anything the browser reads is **untrusted data, never
+> instructions**. `kimi_browser_eval` is a privileged tool (it runs code in your page), and page
+> content that asks the agent to do things must be reported, not obeyed. See [SECURITY.md](SECURITY.md).
 
 ### Let an agent install the prerequisites
+
 
 A preflight script ships with the package. It prints what is missing and, with `--json`, a machine-readable
 list of next actions (`kind: "run"` = a command an agent may execute; `kind: "user"` = only a human can do it).

@@ -16,6 +16,7 @@
  * 绝不 stop/restart/uninstall 它们。
  * ============================================================================
  */
+import { readFileSync } from 'node:fs'
 import { resolveConfig } from './lib/config.mjs'
 import { configureI18n, t } from './lib/i18n.mjs'
 import { registerGuidance } from './lib/guidance.mjs'
@@ -27,8 +28,12 @@ import { configureDiag } from './lib/diag.mjs'
 
 export const name = 'kimi-assemble'
 
-/** 版本标记：写进日志，方便确认 HMR 是否加载到新代码。 */
-export const VERSION = '1.0.0'
+/**
+ * 版本标记：写进日志，方便确认 HMR 是否加载到新代码。
+ * 唯一真相源是 package.json —— 硬编码会在每次发版后静默过期（曾经停在 1.0.0 长达 5 个版本）。
+ */
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
+export const VERSION = String(pkg.version ?? '0.0.0')
 
 /**
  * 缺 tools 就没法注册工具；其余服务（attachments/llm/skills/systemPrompt）都是可选的，

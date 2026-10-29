@@ -612,6 +612,37 @@ await testAsync('诊断日志：开启后写 JSONL，且不记参数值', async 
   }
 })
 
+
+// ---------------------------------------------------------------------------
+// 1.2.0：失败时自带可执行的下一步
+// ---------------------------------------------------------------------------
+await testAsync('错误体自带下一步：有 run 命令，且 JSON 可解析', async () => {
+  const { formatNextActions } = await import('../lib/next-actions.mjs')
+  const block = formatNextActions('KIMI_WEBRIDGE_DOWN')
+  assert.ok(block.includes('[next]'), '应有 [next] 标题')
+  assert.ok(block.includes('run:'), '应有可直接执行的 run 行')
+  const jsonLine = block.split('\n').find((line) => line.trim().startsWith('{'))
+  assert.ok(jsonLine, '应有机器可读的一行 JSON')
+  const parsed = JSON.parse(jsonLine.trim())
+  assert.ok(Array.isArray(parsed.next_actions) && parsed.next_actions.length > 0)
+  const runnable = parsed.next_actions.filter((a) => a.kind === 'run' && a.cmd)
+  assert.ok(runnable.length > 0, '至少有一条 kind=run 且带 cmd')
+  assert.ok(runnable[0].cmd.includes('doctor.mjs'), 'run 命令应指向 doctor 脚本')
+})
+
+await testAsync('错误体自带下一步：无关错误不加噪音', async () => {
+  const { formatNextActions } = await import('../lib/next-actions.mjs')
+  assert.equal(formatNextActions('KIMI_ARGS'), '')
+  assert.equal(formatNextActions('SOMETHING_ELSE'), '')
+})
+
+await testAsync('错误体自带下一步：桌面缺失给的是可自动执行的安装命令', async () => {
+  const { nextActionsFor } = await import('../lib/next-actions.mjs')
+  const { actions } = nextActionsFor('KIMI_CU_NOT_INSTALLED')
+  const install = actions.find((a) => a.kind === 'run' && String(a.cmd).includes('--install-desktop'))
+  assert.ok(install, '应给出 --install-desktop 的 run 命令')
+})
+
 await new Promise((resolve) => setTimeout(resolve, 0))
 for (const { name, error } of failures) {
   console.error(`✗ ${name}\n  ${error?.message ?? error}`)
