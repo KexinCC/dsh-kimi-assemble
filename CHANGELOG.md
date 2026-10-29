@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.5] — 2026-10-29
+
+Publishes a reproducible benchmark. Docs and bench only; no runtime change.
+
+### Added
+
+- : same machine, same fixture pages, same operations, this bridge versus
+  Playwright (installed Chrome via channel:chrome). Measures cold start, per-action p50/p95,
+  20-operation batching and the payload handed to the model.
+-  plus a Benchmark section in both READMEs, stating up front that no
+  recognised leaderboard exists for a plugin, and reporting the numbers it actually has:
+  navigation 7.8x slower (two extra hops, but it is the user real Chrome), click with change
+  verification 10.6x slower and click without it 3x faster than Playwright, batching 3.2x
+  faster (196 vs 62 ops/s), cold start a wash.
+
 ## [1.1.4] — 2026-10-29
 
 Reliability tail: the failures that actually showed up in 10,909 logged tool calls are now either

@@ -236,6 +236,10 @@ round, and six browser steps that used to cost six rounds now finish inside a si
 
 ---
 
+Numbers above are per-call inside the plugin. For a like-for-like comparison against
+Playwright on the same pages — including where this bridge is slower and where it is
+faster — see [Benchmark](#benchmark).
+
 ## Why it does not go wrong
 
 1. **No shell.** Browser requests are `node:http` with a UTF-8 buffer inside the Host process.
@@ -329,6 +333,29 @@ In-host acceptance (2026-10-23): 13 `kimi_*` tools visible; a `kimi_cu_observe` 
 arrived as an image block; Chinese round-tripped intact through `kimi_browser_open/read/screenshot`;
 a 6-step batch script finished in 0.6 s; the `kimi-cu` / `kimi-webbridge` runtime skills replaced
 the old curl/`js` versions.
+
+## Benchmark
+
+No recognised leaderboard exists for a browser-control plugin — WebArena, WebVoyager,
+Mind2Web and OSWorld all measure *an agent* (model + tools) on hundreds of tasks. So instead of
+inventing a "score", this measures latency and throughput against the industry baseline
+(Playwright) on the same machine, pages and operations.
+
+| Operation | This plugin (p50) | Playwright (p50) | Ratio |
+|---|---:|---:|---:|
+| navigate | 157 ms | 20 ms | 7.8× slower |
+| read page | 48 ms | 19 ms | 2.5× slower |
+| click + change verification (default) | 674 ms | 64 ms | 10.6× slower |
+| click without verification | **18 ms** | 52 ms | **3× faster** |
+| fill | 32 ms | 24 ms | 1.4× slower |
+| screenshot | 145 ms | 50 ms | 2.9× slower |
+| cold start | 524 ms | 507 ms | ≈ same |
+| 20 operations in one call | **102 ms (196 ops/s)** | 320 ms (62 ops/s) | **3.2× faster** |
+
+The short version: navigation pays for two extra hops (it drives *your* real Chrome, not a
+throwaway one); the verification window is the price of knowing whether an action landed
+(`browserVerify: "off"` removes it); batching is where the model-loop win comes from.
+Methodology, caveats and the reproduction command: [docs/BENCHMARK.md](https://github.com/KexinCC/dsh-kimi-assemble/blob/main/docs/BENCHMARK.md).
 
 ## Layout
 

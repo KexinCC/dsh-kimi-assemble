@@ -38,3 +38,5 @@ ai-video-research/
 dsh-image-gen/
 .chrome-profile/
 **/.chrome-profile/
+.p-*.mjs
+.t-*.mjs
