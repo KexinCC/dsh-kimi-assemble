@@ -154,6 +154,8 @@ kimi-assemble-doctor --json
 | `browserGroupTitle` | `DSH` | 标签组默认标题（用户浏览器里可见） |
 | `browserReadMaxChars` | `20000` | `kimi_browser_read` 默认预算 |
 | `browserVerify` | `auto` | `auto` = 校验动作是否真的改变了页面；`off` = 退回「派发即成功」（回滚开关） |
+| `mouseFallback` | `auto` | JS 点击确认没变化后，自动补一次 CDP 真实鼠标事件（Element UI / Ant Design 必须要）。`clickStrategy` 会说明哪种方式生效 |
+| `popupWatch` | `on` | 检测被吞掉的 `window.open`，报 `popupBlocked` |
 | `browserVerifyLightMs` | `0` | 可逆动作（滚动/悬停/勾选…）的观察预算。这类动作不再白等 600ms：实测 649ms → 13ms |
 | `browserVerifyMs` | `600` | 等待变化的观察窗口，超时才判「没生效」（100–10000） |
 | `diagnostics` | `false` | 每次工具调用往 `~/.dsh/kimi-assemble/diag.log` 追加一行 JSONL（工具名/耗时/成功与否/错误码，**不记参数**） |

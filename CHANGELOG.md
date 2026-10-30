@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] — 2026-10-30
+
+Field report from real work inside a corporate portal (an OA behind an iframe, Element UI style
+widgets, SSO through the portal). Three of the four things that cost time are now handled by the
+plugin instead of by the caller.
+
+### Added — iframes are addressed like normal elements
+
+- `read` lists `frames:` with handles (`#f1 (same-origin) src=…`) whenever a page has any — and
+  says nothing when it has none.
+- `click` / `fill` **auto-detect** the frame: when the selector is not in the top document, the
+  plugin looks through same-origin iframes, acts inside the right one and reports `frameUsed`.
+  `frame:"#f1"` forces a specific one. Cross-origin frames are reported as such instead of faked.
+- Frame-aware verification: the top-level signature cannot see inside an iframe (measured: the
+  page looked "unchanged" while the inner click had worked), so this path compares a deep
+  signature — top document plus every same-origin frame.
+
+### Added — a JS click that does nothing gets retried as a real mouse event
+
+- When a click reports no change, the plugin finds the element, brings the tab to front, and
+  dispatches `Input.dispatchMouseEvent` at its centre, then re-checks. Element UI / Ant Design
+  dropdowns only respond to real events, which is why `el.click()` looked broken.
+- `clickStrategy` says what actually worked: `js` / `frame-js` / `mouse` / `frame-mouse`.
+  Measured on the fixture: a custom dropdown went from "no reaction" to opened.
+- Required constraint, measured: CDP input events (keyboard **and** mouse) do nothing until
+  `Page.bringToFront`. It is focus emulation, not a foreground steal.
+
+### Added — swallowed popups are reported
+
+- Clicks install a `window.open` probe once per session; if it was called and the tab count did
+  not increase, the result carries `popupBlocked: true` and the render says to allow popups or
+  open the link manually. Before this, a blocked SSO popup looked exactly like a dead click.
+
+### Config
+
+- `mouseFallback` (`auto` | `off`), `popupWatch` (`on` | `off`).
+
+Suite: syntax 38 files, unit 59, assert 5, faults 12, i18n 11, market 9, pack 7, version 8,
+bench semantics 20 (+3: iframe addressing, mouse fallback, popup blocking).
+
 ## [1.3.0] — 2026-10-30
 
 Two things, both about not lying to the model: how hard an action is verified, and what the

@@ -160,6 +160,8 @@ want to change; everything else falls back to the defaults.
 | `browserGroupTitle` | `DSH` | default tab group title, visible in the user's browser |
 | `browserReadMaxChars` | `20000` | default `kimi_browser_read` budget |
 | `browserVerify` | `auto` | `auto` = verify that each action changed the page; `off` = fire-and-forget (rollback switch) |
+| `mouseFallback` | `auto` | after a JS click that changed nothing, retry with a real CDP mouse event (Element UI / Ant Design need this). `clickStrategy` reports what worked |
+| `popupWatch` | `on` | detect a swallowed `window.open` and report `popupBlocked` |
 | `browserVerifyLightMs` | `0` | observation budget for reversible actions (scroll / hover / set_checked …). Reversible actions no longer pay the 600 ms window: measured 649 ms → 13 ms |
 | `browserVerifyMs` | `600` | how long to watch for a change before reporting "unchanged" (100–10000) |
 | `diagnostics` | `false` | append one JSONL line per tool call to `~/.dsh/kimi-assemble/diag.log` (name, ms, ok, error code — never arguments) |

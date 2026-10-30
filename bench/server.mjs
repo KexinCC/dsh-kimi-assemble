@@ -147,6 +147,32 @@ const ROUTES = {
   '/row.html': () => page('row done', '<p id="mark">ROW_OK</p>'),
   '/form-done.html': () => page('form done', '<p id="mark">FORM_OK</p>'),
   '/dialog-done.html': () => page('dialog done', '<p id="mark">DIALOG_OK</p>'),
+  // 同源 iframe + 自绘下拉 + window.open —— 模拟「门户套 OA」这类真实系统
+  '/portal.html': () =>
+    page(
+      'portal',
+      [
+        '<div id="top">top level</div>',
+        '<iframe id="f1" src="/oa-inner.html" style="margin-top:86px;width:700px;height:420px;border:1px solid #ccc"></iframe>',
+        '<div id="sso" style="display:inline-block;padding:8px 12px;background:#0a7;color:#fff" onclick="window.__openCount=(window.__openCount||0)+1; window.open(\'/done.html\', \'_blank\')">SSO</div>',
+      ].join(""),
+    ),
+  '/oa-inner.html': () =>
+    page(
+      'oa inner',
+      [
+        '<button id="oa-btn" onclick="document.getElementById(\'mark\').textContent=\'INNER_CLICKED\'">OA 提交</button>',
+        '<div id="mark">idle</div>',
+        // Element-UI 风格：不是 <select>，而是 div 触发器 + 浮层选项，JS click 无效
+        '<div id="el-select" style="margin-top:8px;border:1px solid #999;padding:4px;width:180px">请选择<span class="val"></span><div class="opts" style="display:none;border:1px solid #333;background:#fff">',
+        '  <div class="opt" data-v="A">选项A</div><div class="opt" data-v="B">选项B</div>',
+        '</div></div>',
+        // 只有真实鼠标事件才会被这个监听器接受
+        '<script>window.__needRealMouse = true; document.getElementById("el-select").addEventListener("mousedown", function () { window.__realMouse = (window.__realMouse || 0) + 1; this.querySelector(".opts").style.display = "block"; });',
+        'document.querySelectorAll("#el-select .opt").forEach(function(el){ el.addEventListener("click", function(){ document.querySelector("#el-select .val").textContent = el.dataset.v }) });</script>',
+      ].join(""),
+    ),
+  '/portal-done.html': () => page('portal done', '<p id="mark">PORTAL_OK</p>'),
 }
 
 /**

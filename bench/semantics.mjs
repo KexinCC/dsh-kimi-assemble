@@ -266,6 +266,41 @@ await check('fill(submit) 在没有提交按钮的表单上也能提交（cdp-en
   await call('kimi_browser_tabs', { action: 'close_session' })
 })
 
+
+await check('iframe：read 列出帧句柄，click 自动进帧并判定为 verified', async () => {
+  const s2 = arm.session('sem-frame')
+  const call = arm.chain(s2)
+  await call('kimi_browser_open', { url: `${server.url}/portal.html` })
+  const read = await call('kimi_browser_read', { max_chars: 4000 })
+  assert.match(JSON.stringify(read), /#f1/, 'read 应列出 #f1 句柄')
+  const clicked = await call('kimi_browser_click', { selector: '#oa-btn' })
+  assert.equal(clicked.frameUsed, '#f1', '应自动进帧')
+  assert.equal(clicked.status, 'verified', '帧内点击应判定为 verified（顶层签名看不见帧内变化，必须用深度签名）')
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
+await check('自绘下拉：JS 点击无效时自动补真实鼠标事件', async () => {
+  const s2 = arm.session('sem-mouse')
+  const call = arm.chain(s2)
+  await call('kimi_browser_open', { url: `${server.url}/portal.html` })
+  const clicked = await call('kimi_browser_click', { selector: '#el-select' })
+  assert.equal(clicked.clickStrategy, 'frame-mouse', '应走到真实鼠标兜底')
+  const shown = await call('kimi_browser_eval', {
+    code: "(() => document.querySelector('#f1').contentDocument.querySelector('#el-select .opts').style.display)()",
+  })
+  assert.match(JSON.stringify(shown), /block/, '真实鼠标应把下拉打开')
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
+await check('弹窗被拦截时明确报告 popupBlocked', async () => {
+  const s2 = arm.session('sem-popup')
+  const call = arm.chain(s2)
+  await call('kimi_browser_open', { url: `${server.url}/portal.html` })
+  const clicked = await call('kimi_browser_click', { selector: '#sso' })
+  assert.equal(clicked.popupBlocked, true, '调用了 window.open 但没开新标签 → 应报 popupBlocked')
+  await call('kimi_browser_tabs', { action: 'close_session' })
+})
+
 await server.close()
 console.log(`\n语义检查：${passed} 项通过，${failures.length} 项失败`)
 if (failures.length) {
