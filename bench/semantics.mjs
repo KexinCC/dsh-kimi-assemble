@@ -51,7 +51,20 @@ function makeArm(overrides = {}) {
 
 const arm = makeArm()
 
+/** 收尾：把本次跑过会话的标签都关掉（用例失败时也执行） */
+const seenSessions = new Set()
+async function closeEverySession() {
+  for (const name of seenSessions) {
+    try {
+      await arm.chain(name)('kimi_browser_tabs', { action: 'close_session' })
+    } catch {
+      /* 已经关掉或不存在：忽略 */
+    }
+  }
+}
+
 await check('wait(text) 不会把 <script> 里的字面量当成页面文本', async () => {
+  seenSessions.add('script-text')
   const s = arm.session('script-text')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/slow.html`, wait_until: 'none' })
@@ -71,6 +84,7 @@ await check('wait(text) 不会把 <script> 里的字面量当成页面文本', a
 })
 
 await check('wait(text) 超时如实报告，不谎报成功', async () => {
+  seenSessions.add('wait-timeout')
   const s = arm.session('wait-timeout')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/click-nav.html` })
@@ -81,6 +95,7 @@ await check('wait(text) 超时如实报告，不谎报成功', async () => {
 })
 
 await check('click 在无变化页面上报告 changed=false（不再静默成功）', async () => {
+  seenSessions.add('silent-click')
   const s = arm.session('silent-click')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/silent.html` })
@@ -92,6 +107,7 @@ await check('click 在无变化页面上报告 changed=false（不再静默成�
 })
 
 await check('click 在导航页面上报告 changed=true 并说明变化', async () => {
+  seenSessions.add('nav-click')
   const s = arm.session('nav-click')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/click-nav.html` })
@@ -114,6 +130,7 @@ await check('browserVerify=off 时退回「派发即成功」（回滚开关有�
 
 await check('fill(submit) 在回车被吞的表单上自动恢复并提交（form.html）', async () => {
   server.resetHits()
+  seenSessions.add('form-enter')
   const s = arm.session('form-enter')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form.html` })
@@ -128,6 +145,7 @@ await check('fill(submit) 在回车被吞的表单上自动恢复并提交（for
 
 await check('dialog accept 能解除阻塞并让页面继续', async () => {
   server.resetHits()
+  seenSessions.add('dialog')
   const s = arm.session('dialog')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/dialog.html` })
@@ -141,6 +159,7 @@ await check('dialog accept 能解除阻塞并让页面继续', async () => {
 })
 
 await check('read(mode=diff) 在无变化时只回「没变化」且字节数很小', async () => {
+  seenSessions.add('diff')
   const s = arm.session('diff')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/list.html` })
@@ -154,6 +173,7 @@ await check('read(mode=diff) 在无变化时只回「没变化」且字节数很
 })
 
 await check('read 附带页面状态：url/焦点/元素计数', async () => {
+  seenSessions.add('meta')
   const s = arm.session('meta')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form.html` })
@@ -168,6 +188,7 @@ await check('read 附带页面状态：url/焦点/元素计数', async () => {
 })
 
 await check('eval 返回结构化结果', async () => {
+  seenSessions.add('eval')
   const s = arm.session('eval')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/list.html` })
@@ -177,6 +198,7 @@ await check('eval 返回结构化结果', async () => {
 })
 
 await check('act(select/check) 走 schema 校验并回报变化', async () => {
+  seenSessions.add('act')
   const s = arm.session('act')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form.html` })
@@ -191,6 +213,7 @@ await check('act(select/check) 走 schema 校验并回报变化', async () => {
 
 await check('fill(submit) 在有联想下拉的表单上仍能提交（点按钮绕开下拉）', async () => {
   server.resetHits()
+  seenSessions.add('submit-suggest')
   const s = arm.session('submit-suggest')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form-suggest.html` })
@@ -205,6 +228,7 @@ await check('fill(submit) 在有联想下拉的表单上仍能提交（点按钮
 
 await check('fill(submit) 在回车完全无效的表单上靠点按钮提交', async () => {
   server.resetHits()
+  seenSessions.add('submit-button')
   const s = arm.session('submit-button')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form-button-only.html` })
@@ -218,6 +242,7 @@ await check('fill(submit) 在回车完全无效的表单上靠点按钮提交', 
 
 await check('fill(submit) 在普通表单上直接点按钮提交（回车不产生 keydown）', async () => {
   server.resetHits()
+  seenSessions.add('submit-plain')
   const s = arm.session('submit-plain')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form-plain.html` })
@@ -232,6 +257,7 @@ await check('fill(submit) 在普通表单上直接点按钮提交（回车不产
 
 await check('act press 用 CDP 发真实回车，能触发表单隐式提交', async () => {
   server.resetHits()
+  seenSessions.add('press-real')
   const s = arm.session('press-real')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form-plain.html` })
@@ -244,6 +270,7 @@ await check('act press 用 CDP 发真实回车，能触发表单隐式提交', a
 })
 
 await check('act press 对组合键回落 send_keys（不谎报真事件）', async () => {
+  seenSessions.add('press-chord')
   const s = arm.session('press-chord')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form-plain.html` })
@@ -255,6 +282,7 @@ await check('act press 对组合键回落 send_keys（不谎报真事件）', as
 
 await check('fill(submit) 在没有提交按钮的表单上也能提交（cdp-enter 或 requestSubmit）', async () => {
   server.resetHits()
+  seenSessions.add('submit-cdp')
   const s = arm.session('submit-cdp')
   const call = arm.chain(s)
   await call('kimi_browser_open', { url: `${server.url}/form-suggest.html` })
@@ -268,6 +296,7 @@ await check('fill(submit) 在没有提交按钮的表单上也能提交（cdp-en
 
 
 await check('iframe：read 列出帧句柄，click 自动进帧并判定为 verified', async () => {
+  seenSessions.add('sem-frame')
   const s2 = arm.session('sem-frame')
   const call = arm.chain(s2)
   await call('kimi_browser_open', { url: `${server.url}/portal.html` })
@@ -280,6 +309,7 @@ await check('iframe：read 列出帧句柄，click 自动进帧并判定为 veri
 })
 
 await check('自绘下拉：JS 点击无效时自动补真实鼠标事件', async () => {
+  seenSessions.add('sem-mouse')
   const s2 = arm.session('sem-mouse')
   const call = arm.chain(s2)
   await call('kimi_browser_open', { url: `${server.url}/portal.html` })
@@ -293,6 +323,7 @@ await check('自绘下拉：JS 点击无效时自动补真实鼠标事件', asyn
 })
 
 await check('弹窗被拦截时明确报告 popupBlocked', async () => {
+  seenSessions.add('sem-popup')
   const s2 = arm.session('sem-popup')
   const call = arm.chain(s2)
   await call('kimi_browser_open', { url: `${server.url}/portal.html` })
@@ -301,6 +332,7 @@ await check('弹窗被拦截时明确报告 popupBlocked', async () => {
   await call('kimi_browser_tabs', { action: 'close_session' })
 })
 
+await closeEverySession()
 await server.close()
 console.log(`\n语义检查：${passed} 项通过，${failures.length} 项失败`)
 if (failures.length) {
